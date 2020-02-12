@@ -1,24 +1,21 @@
 'use strict';
 const router = require('express').Router();
 const user = require('../../app/controller/user');
-const shipment = require('../../app/controller/shipment');
-const airline = require('../../app/controller/airline');
 const isAuthenticated = require("./../../middlewares/isAuthenticated");
+const interswitch = require('../../app/controller/interswitch');
+const s3 = require('../../app/helper/s3');
 
 // add route
 router.post('/login', user.login);
 router.post('/signup', user.signUp);
 router.put('/confirm/:confirmationCode', user.confirm);
-router.post('/me', isAuthenticated, user.me);
+router.get('/user', isAuthenticated, user.me);
 
-router.post('/shipment', isAuthenticated, shipment.create);
-router.get('/shipment', isAuthenticated, shipment.fetch);
-router.get('/shipment/:shipmentId', isAuthenticated, shipment.fetchOne);
-router.put('/shipment/:shipmentId', isAuthenticated, shipment.acceptShipment);
+router.put('/kyc/update', isAuthenticated, s3.uploadS3.single('file'), user.updateKyc)
 
-router.post('/airline', isAuthenticated, airline.create);
-router.get('/airline', airline.fetch);
-router.get('/airline/:airlineId', airline.fetchOne);
-
+router.get('/interswitch/categories', interswitch.getBillerCategories)
+router.get('/interswitch/billers', interswitch.getBillers)
+router.get('/interswitch/billers/category/:categoryId', interswitch.getBillersByCategory)
+router.get('/interswitch/biller/:billerId', interswitch.getBillersPaymentItems)
 
 module.exports = router

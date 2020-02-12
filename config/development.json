@@ -1,6 +1,6 @@
 {
     "database": {
-        "url": "mongodb://localhost/airhaul"
+        "url": "mongodb://localhost/payafrik"
     },
     "jwt": {
         "secretOrKey": "DEV_SECRET",
@@ -8,5 +8,16 @@
         "audience": "JONU",
         "expiresIn": "24h",
         "algorithm":"HS256"
+    },
+    "interswitch":{
+        "INTERSWITCH_CLIENT_ID": "IKIA6D83F5C57135BF4C8073BD07DE60F3400263BCB4",
+        "INTERSWITCH_SECRET":"ZLSFUaFgIfuXrAHLHv1lP0qEzxPjfxnvMwbK478REBw="
+    },
+    "google":{
+        "GEOCODING_API_KEY": "AIzaSyDLvKLuJyreFiDzQcd5aEtHkfOTJiTILc8"
+    },
+    "awsS3":{
+        "AWS_ACCESS_KEY_ID": "AKIAINL3VVRWUHQC5LFQ",
+        "AWS_SECRET_ACCESS_KEY": "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"
     }
 }

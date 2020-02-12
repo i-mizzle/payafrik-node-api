@@ -5,8 +5,15 @@ var Schema = mongoose.Schema;
 var ObjectId = Schema.Types.ObjectId;
 const bcrypt = require('bcrypt');
 const userSchema = new mongoose.Schema({
-    name: {
+    firstName: {
         type: String,
+    },
+    lastName: {
+        type: String,
+    },
+    username: {
+        type: String,
+        unique: true
     },
     email: {
         type: String,
@@ -23,34 +30,49 @@ const userSchema = new mongoose.Schema({
     confirmationCode: {
         type: String,
     },
+    tokens: {
+        type: Number,
+        default: 0
+    },
+    dob: {
+        type: Number,
+        default: 0
+    },
     confirmed:{
         type:Boolean,
         default: false
     },
     userType: {
         type: String,
-        enum : ['SYSTEM_ADMIN','USER','AIRLINE_ADMIN'],
+        enum : ['SYSTEM_ADMIN','USER'],
         default: 'USER'
     },
-    airline: {
-        type: ObjectId,
-        ref: 'airlines'
-    },
-    business: {
-        businessName: { 
-            type: String 
+    address: {
+        addressLine: { 
+            type: String, 
         },
-        businesAddress: { 
-            type: String 
+        location: { 
+            type: String, 
         },
-        products: []
-      },
-    shipments: [
+        coordinates: {
+            type: String
+        },
+    }
+    ,
+    kycDocs: [
         {
-            shipmentId: { 
-                type: ObjectId, 
-                ref: 'shipments' 
-            }
+            documentType: { 
+                type: String, 
+                enum : ['ID','CERTIFICATE']
+            },
+            documentS3Url: { 
+                type: String, 
+            },
+            documentStatus: {
+                type: String,
+                enum : ['APPROVED','PENDING','REJECTED'],
+                default: 'PENDING'
+            },
         }
     ],
     refreshToken: {
