@@ -21,11 +21,11 @@ module.exports = {
       description: 'Local server'
     },
     {
-      url: 'https://api_url_testing',
+      url: 'http://ec2-3-16-42-184.us-east-2.compute.amazonaws.com:/v1/api',
       description: 'Testing server'
     },
     {
-      url: 'https://api_url_production',
+      url: 'http://ec2-3-16-42-184.us-east-2.compute.amazonaws.com:/v1/api',
       description: 'Production server'
     }
   ],
