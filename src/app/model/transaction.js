@@ -5,71 +5,28 @@ var Schema = mongoose.Schema;
 var ObjectId = Schema.Types.ObjectId;
 // const bcrypt = require('bcrypt');
 const transactionSchema = new mongoose.Schema({
-    shipmentOwner:{
+    userId:{
         type: ObjectId, 
         ref: 'Users' 
     },
-    shipmentSource: {
+    transactionType: {
         type: String,
+        enum : ['CASH','TOKEN','CRYPTO'],
+        default: 'CASH'
     },
-    shipmentDestination: {
+    transactionStatus: {
         type: String,
-    },
-    handlingInstructions: {
-        type: String,
-    },
-    status: {
-        type: String,
-        enum : ['PENDING','ACCEPTED','IN_TRANSIT','DELIVERED','REJECTED','IN_DISPUTE','DELIVERY_CONFIRMED'],
+        enum : ['SUCCESSFUL','FAILED','PENDING'],
         default: 'PENDING'
     },
-    airline: {
-        type: ObjectId, 
-        ref: 'Airlines' 
-    },
-    eta: {
-        type: Date
-    },
-    desiredShipmentDate: {
+    transactionReference: {
         type: String,
     },
-    shipmentCost: {
-        type: Number,
+    channel: {
+        type: String,
+        enum : ['PAYSTACK','COINBASE','PAYAFRIK'],
+        default: 'PENDING'
     },
-    paid: {
-        type: Boolean,
-        default: false
-    },
-    deliveryConfirmedBy:{
-        name: {
-            type:String
-        },
-        phone: {
-            type: String
-        },
-        email:{
-            type: String
-        }
-    },
-    items:[ 
-        {
-            weight: { 
-                type: Number 
-            },
-            weightUnit: { 
-                type: String 
-            },
-            itemName: {
-                type: String
-            },
-            quantity: {
-                type: Number
-            },
-            quantityUnit: {
-                type:String
-            }
-        }
-    ],
 }, {
     timestamps: true
 });

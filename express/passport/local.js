@@ -2,12 +2,12 @@ const localStratagy = require('passport-local').Strategy;
 const mongoose = require('mongoose');
 const User = mongoose.model('User');
 module.exports = new localStratagy({
-        usernameField: 'email',
+        usernameField: 'username',
         passwordField: 'password',
     },
-    async (email, password, callback) => {
+    async (username, password, callback) => {
         try {
-            let user = await User.findOne({ email });
+            let user = await User.findOne({ username });
             if (user) {
                 if (!user.isValidPassword(password)) {
                     return callback(null, false, { "message": "Password is Incorrect!" });

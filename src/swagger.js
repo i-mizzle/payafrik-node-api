@@ -110,7 +110,126 @@ module.exports = {
           }
         }
       }
-    }
+    },
+    '/login': {
+      post: {
+        tags: ['USER operations'],
+        description: 'Log in user',
+        operationId: 'logInUser',
+        parameters: [],
+        requestBody: {
+          content: {
+            'application/json': {
+              schema: {
+                $ref: '#/components/schemas/LoginUser'
+              }
+            }
+          },
+          required: true
+        },
+        responses: {
+          '200': {
+            description: 'New user was created'
+          },
+          '400': {
+            description: 'Invalid parameters',
+            content: {
+              'application/json': {
+                schema: {
+                  $ref: '#/components/schemas/Error'
+                },
+                example: {
+                  message: 'User already exists',
+                  status: 'false'
+                }
+              }
+            }
+          }
+        }
+      }
+    },
+    '/confirm/{confirmationCode}': {
+      put: {
+        tags: ['USER operations'],
+        description: 'Confirm user account',
+        operationId: 'confirmUserAccount',
+        parameters: [
+          {
+            name: 'confirmationCode',
+            in: 'path',
+            schema: {
+              $ref: '#/components/schemas/confirmationCode'
+            },
+            required: false,
+            description: 'Confirmation code sent to user via email after signup'
+          },
+        ],
+        requestBody: {
+          content: {
+            'application/json': {
+              schema: {
+                $ref: '#/components/schemas/accountConfirmation'
+              }
+            }
+          },
+          required: true
+        },
+        responses: {
+          '200': {
+            description: 'Account confirmed successfully'
+          },
+          '400': {
+            description: 'Invalid parameters',
+            content: {
+              'application/json': {
+                schema: {
+                  $ref: '#/components/schemas/Error'
+                },
+                example: {
+                  message: 'User not found or account already confirmed',
+                  status: 'false'
+                }
+              }
+            }
+          }
+        }
+      }
+    },
+    '/user': {
+      get: {
+        tags: ['USER operations'],
+        description: 'Get single user details',
+        operationId: 'getUserDetails',
+        parameters: [],
+        responses: {
+          '200': {
+            description: 'User details found successfully',
+            content: {
+              'application/json': {
+                schema: {
+                  $ref: '#/components/schemas/User'
+                }
+              }
+            }
+          },
+          '400': {
+            description: 'Missing parameters',
+            content: {
+              'application/json': {
+                schema: {
+                  $ref: '#/components/schemas/Error'
+                },
+                example: {
+                  message: 'companyId is missing',
+                  internal_code: 'missing_parameters'
+                }
+              }
+            }
+          }
+        }
+      },
+    },
+
   },
   components: {
     schemas: {
@@ -144,6 +263,11 @@ module.exports = {
         type: 'String',
         description: 'User\'s phone number with country code',
         example: '+2348012345678'
+      },
+      confirmationCode: {
+        type: 'String',
+        description: 'User\'s confirmation code. sent to the user via email after signup',
+        example: 'NhL0jb7ME4ohSxoI2YLhChKIyGnYTekeSvy'
       },
       password: {
         type: 'String',
@@ -211,6 +335,39 @@ module.exports = {
           },
           phone: {
             $ref: '#/components/schemas/phone'
+          },
+        }
+      },
+      LoginUser: {
+        type: 'object',
+        properties: {
+          username: {
+            $ref: '#/components/schemas/username'
+          },
+          password: {
+            $ref: '#/components/schemas/password'
+          }
+        }
+      },
+      accountConfirmation: {
+        type: 'object',
+        properties: {
+          firstName: {
+            $ref: '#/components/schemas/firstName'
+          },
+          lastName: {
+            $ref: '#/components/schemas/lastName'
+          },
+          address: {
+            type: 'object',
+              properties: {
+              addressLine: {
+                $ref: '#/components/schemas/addressLine'
+              },
+              location: {
+                $ref: '#/components/schemas/location'
+              }
+            }
           },
         }
       },
