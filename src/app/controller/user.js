@@ -10,9 +10,12 @@ const User = mongoose.model('User');
 module.exports = {
     // login controller
     login: async (req, res) => {
-        let user = await User.findOne({ email: req.body.email, confirmed: true });
+        let user = await User.findOne({ username: req.body.username, confirmed: true });
         if (!user) {
             return response.conflict(res, { message: 'User not found or account has not been confirmed.'});
+        }
+        if(user.status === 'DISABLED') {
+            return response.conflict(res, { message: 'This account is disabled and cannot be logged in.'});
         }
         passport.authenticate('local', async (err, user, info) => {
             if (err) { return response.error(res, err); }
@@ -55,7 +58,12 @@ module.exports = {
                         message: 'Follow this link to confirm your account<br> payafrik.io/activation/'+ user.confirmationCode
                     }
                 )){
-                    return response.created(res, { email: user.email });
+                    return response.created(res, {
+                        email: user.email,
+                        username: user.username,
+                        phone: user.phone,
+                        confirmationCode: user.confirmationCode
+                    });
                 }
                 
             } else {

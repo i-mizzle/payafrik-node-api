@@ -47,6 +47,11 @@ const userSchema = new mongoose.Schema({
         enum : ['SYSTEM_ADMIN','USER'],
         default: 'USER'
     },
+    status: {
+        type: String,
+        enum : ['ACTIVE','DISABLED'],
+        default: 'ACTIVE'
+    },
     address: {
         addressLine: { 
             type: String, 

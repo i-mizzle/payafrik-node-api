@@ -47,6 +47,18 @@ module.exports = {
              response.error(res, error);
         }
     },
+    fetchForUser: async (req, res) => {
+        if (req.user.userType !== "SYSTEM_ADMIN" && req.user.userId !== req.params.userId) {
+            return response.conflict(res, { message: 'Sorry, you are not authorized to view these transactions'});
+        }
+        try{
+            let transactions = await Transaction.find({ userId: req.params.userId });
+            return response.ok(res, { transactions: transactions });
+        } catch(error) {
+             response.error(res, error);
+        }
+    },
+    
     fetchOne: async (req, res) => {
         try{
             let transaction = await Transaction.findOne({ _id: req.params.transactionId });
