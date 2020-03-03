@@ -18,4 +18,9 @@ router.get('/interswitch/billers', interswitch.getBillers)
 router.get('/interswitch/billers/category/:categoryId', interswitch.getBillersByCategory)
 router.get('/interswitch/biller/:billerId', interswitch.getBillersPaymentItems)
 
+router.post('/interswitch/payment-advice', interswitch.sendPaymentAdvice)
+router.post('/interswitch/validate-customer', interswitch.validateCustomer)
+
+router.get('/interswitch/query-transaction/:requestRef', interswitch.queryTransaction)
+
 module.exports = router

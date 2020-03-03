@@ -229,6 +229,40 @@ module.exports = {
         }
       },
     },
+    '/interswitch/categories': {
+      get: {
+        tags: ['INTERSWITCH operations'],
+        description: 'Get all categories of interswitch billers',
+        operationId: 'getBiller Categories',
+        parameters: [],
+        responses: {
+          '200': {
+            description: 'Categories were found',
+            content: {
+              'application/json': {
+                schema: {
+                  $ref: '#/components/schemas/BillerCategories'
+                }
+              }
+            }
+          },
+          '400': {
+            description: 'Missing parameters',
+            content: {
+              'application/json': {
+                schema: {
+                  $ref: '#/components/schemas/Error'
+                },
+                example: {
+                  message: 'no billers found',
+                  internal_code: 'missing_parameters'
+                }
+              }
+            }
+          }
+        }
+      },
+    },
 
   },
   components: {
@@ -320,6 +354,35 @@ module.exports = {
           description: 'Document approval status. APPROVED afer being reviewed and approved by a payafrik administrator',
           enum : ['APPROVED','PENDING','REJECTED'],
           example: 'PENDING'
+      },
+      categoryid: {
+        type: 'String',
+        description: 'The category\'s id as issued by interswitch',
+        example: '135'
+      },
+      categoryname: {
+        type: 'String',
+        description: 'The name of the category',
+        example: 'Utility bills'
+      },
+      description: {
+        type: 'String',
+        description: 'The description of the category',
+        example: 'Pay for your cable TV subscriptions here'
+      },
+      InterswitchCategory: {
+        type: 'object',
+        properties: {
+          categoryid: {
+            $ref: '#/components/schemas/categoryid'
+          },
+          categoryname: {
+            $ref: '#/components/schemas/categoryname'
+          },
+          description: {
+            $ref: '#/components/schemas/description'
+          }
+        }
       },
       NewUser: {
         type: 'object',
@@ -441,6 +504,17 @@ module.exports = {
             type: 'array',
             items: {
               $ref: '#/components/schemas/User'
+            }
+          }
+        }
+      },
+      InterswitchCategories: {
+        type: 'object',
+        properties: {
+          data: {
+            type: 'array',
+            items: {
+              $ref: '#/components/schemas/InterswitchCategory'
             }
           }
         }

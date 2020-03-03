@@ -2,6 +2,7 @@ const requestPromise = require("request-promise");
 const keySanitizer = require("keys-to-camelcase");
 const response = require('./../responses');
 const helpers = require("../helper/helpers");
+const userHelper = require('../helper/user');
 const interswitchRequestAdapter = require("../helper/interswitch-adpter");
 
 let requestHeaders = {};
@@ -28,6 +29,7 @@ getBillerCategories = async (req, res) => {
     // console.log(categories);
   } catch (error) {
     console.log(error.message);
+    return response.error(res, error.message);
   }
 };
 
@@ -50,6 +52,7 @@ getBillers = async (req, res) => {
 
   } catch (error) {
     console.log(error.message);
+    return response.error(res, error.message);
   }
 };
 
@@ -71,6 +74,7 @@ getBillersByCategory = async (req, res) => {
     return response.ok(res, billers)
   } catch (error) {
     console.log(error.message);
+    return response.error(res, error.message);
   }
 };
 
@@ -94,10 +98,14 @@ getBillersPaymentItems = async (req, res) => {
     return response.ok(res, paymentItems)
   } catch (error) {
     console.log(error.message);
+    return response.error(res, error.message);
   }
 };
 
-validateCustomer = async (customerId, paymentCode) => {
+validateCustomer = async (req, res) => {
+// validateCustomer = async (customerId, paymentCode) => {
+  const customerId = req.body.customerId;
+  const paymentCode = req.body.paymentCode
   let url = `https://sandbox.interswitchng.com/api/v2/quickteller/customers/validations`;
   let verb = "POST";
   let validationResponse = null;
@@ -117,13 +125,18 @@ validateCustomer = async (customerId, paymentCode) => {
     validationResponse = await requestPromise(requestOptions);
     validationResponse = interswitchRequestAdapter.parseResponse(validationResponse);
 
-    return validationResponse.Customers[0];
+    // return validationResponse.Customers[0];
+    return response.ok(res, validationResponse.Customers[0]);
+
   } catch (error) {
     console.log(error.message);
+    return response.error(res, error);
   }
 };
 
-sendPaymentAdvice = async (customerId, paymentCode, mobileNumber, emailAddress, amount, requestReference) => {
+sendPaymentAdvice = async (req, res) => {
+// sendPaymentAdvice = async (customerId, paymentCode, mobileNumber, emailAddress, amount, requestReference) => {
+
   let url = `https://sandbox.interswitchng.com/api/v2/quickteller/payments/advices`;
   let verb = "POST";
   let adviceResponse = null;
@@ -134,29 +147,35 @@ sendPaymentAdvice = async (customerId, paymentCode, mobileNumber, emailAddress, 
   }
   let adviceRequest = {
     TerminalId: "3DMO0001",
-    paymentCode: paymentCode,
-    customerId: customerId,
-    customerMobile: mobileNumber,
-    customerEmail: emailAddress,
-    amount: amount,
-    requestReference: requestReference
+    paymentCode: req.body.paymentCode,
+    customerId: req.body.customerId,
+    customerMobile: req.body.customerMobile,
+    customerEmail: req.body.customerEmail,
+    amount: req.body.amount,
+    requestReference: '1453'+userHelper.generateRandomCode(15)
   };
 
+  requestHeaders.TerminalId = "3DMO0001"
   console.log(adviceRequest);
+  console.log('headers: ', requestHeaders)
 
   let requestOptions = { uri: url, method: verb, headers: requestHeaders, body: JSON.stringify(adviceRequest) };
   try {
     adviceResponse = await requestPromise(requestOptions);
     adviceResponse = interswitchRequestAdapter.parseResponse(adviceResponse);
     console.log(adviceResponse);
-    return adviceResponse;
+    // return adviceResponse;
+    return response.ok(res, adviceResponse);
   } catch (error) {
     console.log(error.message);
-    throw error;
+    // throw error;
+    return response.error(res, error);
   }
 };
 
-queryTransaction = async transactionReference => {
+queryTransaction = async (req, res) => {
+// queryTransaction = async transactionReference => {
+  let transactionReference = req.params.requestRef
   let url = `https://sandbox.interswitchng.com/api/v2/quickteller/transactions?requestreference=${transactionReference}`;
   let verb = "GET";
   let queryResponse = null;
@@ -170,9 +189,11 @@ queryTransaction = async transactionReference => {
   try {
     queryResponse = await requestPromise(requestOptions);
     queryResponse = interswitchRequestAdapter.parseResponse(queryResponse);
-    console.log(adviceResponse);
+
+    return response.ok(res, queryResponse);
   } catch (error) {
     console.log(error.message);
+    return response.error(res, error);
   }
 };
 

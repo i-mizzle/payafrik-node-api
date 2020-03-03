@@ -2,7 +2,6 @@
 const mailer = require('../helper/mailer');
 const response = require('../responses');
 const mongoose = require("mongoose");
-
 const Transaction = mongoose.model('Transaction');
 module.exports = {
     create: async (req, res) => {
