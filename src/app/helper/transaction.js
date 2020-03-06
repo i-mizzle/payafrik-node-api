@@ -15,5 +15,16 @@ module.exports = {
         } catch (error) {
             return response.error(res, 'transaction creation failed');
         }
+    },
+    updateTransaction: (updatePayload) => {
+        try {
+            let transaction = await Transaction.findOne({ _id: updatePayload.transactionId});
+            transaction.status = updatePayload.status;
+            
+            await transaction.save();
+            return  transaction;
+        } catch (error) {
+            return response.error(res, 'transaction creation failed');
+        }
     }
 }

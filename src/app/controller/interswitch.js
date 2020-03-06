@@ -145,6 +145,7 @@ sendPaymentAdvice = async (req, res) => {
   } catch (error) {
     console.log(error);
   }
+  const requestRef = '1453'+userHelper.generateRandomCode(15);
   let adviceRequest = {
     TerminalId: "3DMO0001",
     paymentCode: req.body.paymentCode,
@@ -152,7 +153,7 @@ sendPaymentAdvice = async (req, res) => {
     customerMobile: req.body.customerMobile,
     customerEmail: req.body.customerEmail,
     amount: req.body.amount,
-    requestReference: '1453'+userHelper.generateRandomCode(15)
+    requestReference: requestRef
   };
 
   requestHeaders.TerminalId = "3DMO0001"
@@ -163,6 +164,8 @@ sendPaymentAdvice = async (req, res) => {
   try {
     adviceResponse = await requestPromise(requestOptions);
     adviceResponse = interswitchRequestAdapter.parseResponse(adviceResponse);
+    adviceResponse.payafrikTransactionRef = requestRef;
+
     console.log(adviceResponse);
     // return adviceResponse;
     return response.ok(res, adviceResponse);
@@ -175,7 +178,7 @@ sendPaymentAdvice = async (req, res) => {
 
 queryTransaction = async (req, res) => {
 // queryTransaction = async transactionReference => {
-  let transactionReference = req.params.requestRef
+  let transactionReference = req.params.payafrikTransactionRef
   let url = `https://sandbox.interswitchng.com/api/v2/quickteller/transactions?requestreference=${transactionReference}`;
   let verb = "GET";
   let queryResponse = null;
@@ -196,6 +199,46 @@ queryTransaction = async (req, res) => {
     return response.error(res, error);
   }
 };
+
+// mobileRecharge = async (req, res) => {
+//   rechargeData = [
+//     {
+//         "billerid": "901",
+//         "billername": "Airtel Mobile Top-Up",
+//         "shortName": "ZainMTU",
+//         "item": {
+//           "paymentitemid": "06",
+//           "paymentCode": "90106"
+//       }
+//     },
+//     {
+//         "billerid": "120",
+//         "billername": "Etisalat Recharge Top-Up",
+//         "shortName": "ETILAT",
+//     },
+//     {
+//         "billerid": "402",
+//         "billername": "Glo QuickCharge",
+//         "shortName": "GLOQCK",
+//         "item": {
+//           "paymentitemid": "02",
+//           "paymentCode": "40202"
+//       },
+//     },
+//     {
+//         "billerid": "109",
+//         "billername": "MTN e-Charge Prepaid",
+//         "shortName": "MTNVTU",
+//         "item": {
+//           "paymentitemid": "06",
+//           "paymentCode": "10906"
+//       },
+//     }
+//   ];
+
+//   const itemShortName = req.params.shortName;
+
+// }
 
 module.exports = {
   getBillerCategories: getBillerCategories,

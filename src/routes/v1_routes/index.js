@@ -21,6 +21,6 @@ router.get('/interswitch/biller/:billerId', interswitch.getBillersPaymentItems)
 router.post('/interswitch/payment-advice', interswitch.sendPaymentAdvice)
 router.post('/interswitch/validate-customer', interswitch.validateCustomer)
 
-router.get('/interswitch/query-transaction/:requestRef', interswitch.queryTransaction)
+router.get('/interswitch/query-transaction/:payafrikTransactionRef', interswitch.queryTransaction)
 
 module.exports = router
