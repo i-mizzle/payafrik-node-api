@@ -263,6 +263,128 @@ module.exports = {
         }
       },
     },
+    '/interswitch/billers': {
+      get: {
+        tags: ['INTERSWITCH operations'],
+        description: 'Get all interswitch billers',
+        operationId: 'getBillers',
+        parameters: [],
+        responses: {
+          '200': {
+            description: 'Billers were found',
+            content: {
+              'application/json': {
+                schema: {
+                  $ref: '#/components/schemas/BillerCategories'
+                }
+              }
+            }
+          },
+          '400': {
+            description: 'Missing parameters',
+            content: {
+              'application/json': {
+                schema: {
+                  $ref: '#/components/schemas/Error'
+                },
+                example: {
+                  message: 'no billers found',
+                  internal_code: 'missing_parameters'
+                }
+              }
+            }
+          }
+        }
+      },
+    },
+    '/interswitch/billers/category/{categoryId}': {
+      get: {
+        tags: ['INTERSWITCH operations'],
+        description: 'Get all interswitch billers per category',
+        operationId: 'getBillersByCategory',
+        parameters: [
+          {
+            name: 'categoryId',
+            in: 'path',
+            schema: {
+              $ref: '#/components/schemas/categoryid'
+            },
+            required: false,
+            description: 'The Category whose billers will be fetched'
+          },
+        ],
+        responses: {
+          '200': {
+            description: 'Billers were found',
+            content: {
+              'application/json': {
+                // schema: {
+                //   $ref: '#/components/schemas/BillerCategories'
+                // }
+              }
+            }
+          },
+          '400': {
+            description: 'Missing parameters',
+            content: {
+              'application/json': {
+                schema: {
+                  $ref: '#/components/schemas/Error'
+                },
+                example: {
+                  message: 'no billers found',
+                  internal_code: 'missing_parameters'
+                }
+              }
+            }
+          }
+        }
+      },
+    },
+    '/interswitch/biller/{billerId}': {
+      get: {
+        tags: ['INTERSWITCH operations'],
+        description: 'Get all payment items for interswitch biller',
+        operationId: 'getBillersPaymentItems',
+        parameters: [
+          {
+            name: 'billerId',
+            in: 'path',
+            schema: {
+              $ref: '#/components/schemas/billerid'
+            },
+            required: false,
+            description: 'The Biller whose payment items will be fetched'
+          },
+        ],
+        responses: {
+          '200': {
+            description: 'Billers were found',
+            content: {
+              'application/json': {
+                // schema: {
+                //   $ref: '#/components/schemas/BillerCategories'
+                // }
+              }
+            }
+          },
+          '400': {
+            description: 'Missing parameters',
+            content: {
+              'application/json': {
+                schema: {
+                  $ref: '#/components/schemas/Error'
+                },
+                example: {
+                  message: 'no billers found',
+                  internal_code: 'missing_parameters'
+                }
+              }
+            }
+          }
+        }
+      },
+    },
     '/interswitch/payment-advice': {
       post: {
         tags: ['INTERSWITCH operations'],
@@ -272,9 +394,9 @@ module.exports = {
         requestBody: {
           content: {
             'application/json': {
-              schema: {
-                $ref: '#/components/schemas/PaymentAdvice'
-              }
+              // schema: {
+              //   $ref: '#/components/schemas/PaymentAdvice'
+              // }
             }
           },
           required: true
@@ -449,6 +571,11 @@ module.exports = {
         type: 'String',
         description: 'The category\'s id as issued by interswitch',
         example: '135'
+      },
+      billerid: {
+        type: 'String',
+        description: 'The category\'s id as issued by interswitch',
+        example: '201'
       },
       categoryname: {
         type: 'String',
