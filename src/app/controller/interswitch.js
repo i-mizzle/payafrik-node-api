@@ -8,7 +8,8 @@ const interswitchRequestAdapter = require("../helper/interswitch-adpter");
 let requestHeaders = {};
 
 getBillerCategories = async (req, res) => {
-  let url = "https://sandbox.interswitchng.com/api/v2/quickteller/categorys";
+  // let url = "https://sandbox.interswitchng.com/api/v2/quickteller/categorys";
+  let url = 'https://saturn.interswitchng.com/api/v2/quickteller/categorys';
   let verb = "GET";
 
   let categories = null;
@@ -29,12 +30,13 @@ getBillerCategories = async (req, res) => {
     // console.log(categories);
   } catch (error) {
     console.log(error.message);
-    return response.error(res, error.message);
+    // return response.error(res, error.message);
+    response.interswitchError(res, error);
   }
 };
 
 getBillers = async (req, res) => {
-  let url = "https://sandbox.interswitchng.com/api/v2/quickteller/billers";
+  let url = "https://saturn.interswitchng.com/api/v2/quickteller/billers";
   let verb = "GET";
   let billers = null;
   try {
@@ -52,13 +54,14 @@ getBillers = async (req, res) => {
 
   } catch (error) {
     console.log(error.message);
-    return response.error(res, error.message);
+    // return response.error(res, error.message);
+    response.interswitchError(res, error);
   }
 };
 
 getBillersByCategory = async (req, res) => {
   const categoryId = req.params.categoryId
-  let url = `https://sandbox.interswitchng.com/api/v2/quickteller/categorys/${categoryId}/billers`;
+  let url = `https://saturn.interswitchng.com/api/v2/quickteller/categorys/${categoryId}/billers`;
   let verb = "GET";
   let billers = null;
   console.log("getting billers");
@@ -74,13 +77,14 @@ getBillersByCategory = async (req, res) => {
     return response.ok(res, billers)
   } catch (error) {
     console.log(error.message);
-    return response.error(res, error.message);
+    // return response.error(res, error.message);
+    response.interswitchError(res, error);
   }
 };
 
 getBillersPaymentItems = async (req, res) => {
   const billerId = req.params.billerId
-  let url = `https://sandbox.interswitchng.com/api/v2/quickteller/billers/${billerId}/paymentitems`;
+  let url = `https://saturn.interswitchng.com/api/v2/quickteller/billers/${billerId}/paymentitems`;
   let verb = "GET";
   let paymentItems = null;
   try {
@@ -106,7 +110,7 @@ validateCustomer = async (req, res) => {
 // validateCustomer = async (customerId, paymentCode) => {
   const customerId = req.body.customerId;
   const paymentCode = req.body.paymentCode
-  let url = `https://sandbox.interswitchng.com/api/v2/quickteller/customers/validations`;
+  let url = `https://saturn.interswitchng.com/api/v2/quickteller/customers/validations`;
   let verb = "POST";
   let validationResponse = null;
 
@@ -130,24 +134,30 @@ validateCustomer = async (req, res) => {
 
   } catch (error) {
     console.log(error.message);
-    return response.error(res, error);
+    // return response.error(res, error);
+    response.interswitchError(res, error);
   }
 };
 
 sendPaymentAdvice = async (req, res) => {
 // sendPaymentAdvice = async (customerId, paymentCode, mobileNumber, emailAddress, amount, requestReference) => {
-
-  let url = `https://sandbox.interswitchng.com/api/v2/quickteller/payments/advices`;
+  const pfkUserToken = req.headers['pfk-user-token']
+  if(!pfkUserToken || pfkUserToken === ''){
+    return response.badRequest(res, {message: 'pfk-user-token is required in the request header'});
+  }
+  let url = `https://saturn.interswitchng.com/api/v2/quickteller/payments/advices`;
   let verb = "POST";
   let adviceResponse = null;
   try {
     requestHeaders = interswitchRequestAdapter.getHeaders({ url: url, method: verb });
   } catch (error) {
     console.log(error);
+    
   }
-  const requestRef = '1453'+userHelper.generateRandomCode(15);
+  const requestRef = '1906'+userHelper.generateRandomCode(8);
   let adviceRequest = {
-    TerminalId: "3DMO0001",
+    // TerminalId: "3DMO0001"
+    TerminalId: "3PFK0001",
     paymentCode: req.body.paymentCode,
     customerId: req.body.customerId,
     customerMobile: req.body.customerMobile,
@@ -155,10 +165,9 @@ sendPaymentAdvice = async (req, res) => {
     amount: req.body.amount,
     requestReference: requestRef
   };
+  const amount = req.body.amount/100
 
-  requestHeaders.TerminalId = "3DMO0001"
-  console.log(adviceRequest);
-  console.log('headers: ', requestHeaders)
+  requestHeaders.TerminalId = "3PFK0001"
 
   let requestOptions = { uri: url, method: verb, headers: requestHeaders, body: JSON.stringify(adviceRequest) };
   try {
@@ -166,20 +175,47 @@ sendPaymentAdvice = async (req, res) => {
     adviceResponse = interswitchRequestAdapter.parseResponse(adviceResponse);
     adviceResponse.payafrikTransactionRef = requestRef;
 
-    console.log(adviceResponse);
-    // return adviceResponse;
+    await deductUserTokens(pfkUserToken, amount)
+
     return response.ok(res, adviceResponse);
   } catch (error) {
     console.log(error.message);
     // throw error;
-    return response.error(res, error);
+    return response.interswitchError(res, error);
   }
 };
+
+deductUserTokens = async (userToken, amount) => {
+    let url = `https://api.payafrik.io/transactions/transactions/send-afk/`;
+    let verb = "POST";
+    let deductionResponse = null;
+
+    let requestHeaders = {
+      Authorization: userToken,
+      "Content-Type": "application/json"
+    };
+    let deductionRequest = {
+        "recipient":"shalomz",
+        "requested_amount":amount
+    };
+
+    console.log("deductionRequest ====>", deductionRequest)
+  
+    let requestOptions = { uri: url, method: verb, headers: requestHeaders, body: JSON.stringify(deductionRequest) };
+    try {
+      deductionResponse = await requestPromise(requestOptions);
+      console.log(deductionResponse);
+      return true
+    } catch (error) {
+      console.log(error.message);
+      return false
+    }
+  };
 
 queryTransaction = async (req, res) => {
 // queryTransaction = async transactionReference => {
   let transactionReference = req.params.payafrikTransactionRef
-  let url = `https://sandbox.interswitchng.com/api/v2/quickteller/transactions?requestreference=${transactionReference}`;
+  let url = `https://saturn.interswitchng.com/api/v2/quickteller/transactions?requestreference=${transactionReference}`;
   let verb = "GET";
   let queryResponse = null;
   try {
@@ -199,46 +235,6 @@ queryTransaction = async (req, res) => {
     return response.error(res, error);
   }
 };
-
-// mobileRecharge = async (req, res) => {
-//   rechargeData = [
-//     {
-//         "billerid": "901",
-//         "billername": "Airtel Mobile Top-Up",
-//         "shortName": "ZainMTU",
-//         "item": {
-//           "paymentitemid": "06",
-//           "paymentCode": "90106"
-//       }
-//     },
-//     {
-//         "billerid": "120",
-//         "billername": "Etisalat Recharge Top-Up",
-//         "shortName": "ETILAT",
-//     },
-//     {
-//         "billerid": "402",
-//         "billername": "Glo QuickCharge",
-//         "shortName": "GLOQCK",
-//         "item": {
-//           "paymentitemid": "02",
-//           "paymentCode": "40202"
-//       },
-//     },
-//     {
-//         "billerid": "109",
-//         "billername": "MTN e-Charge Prepaid",
-//         "shortName": "MTNVTU",
-//         "item": {
-//           "paymentitemid": "06",
-//           "paymentCode": "10906"
-//       },
-//     }
-//   ];
-
-//   const itemShortName = req.params.shortName;
-
-// }
 
 module.exports = {
   getBillerCategories: getBillerCategories,
