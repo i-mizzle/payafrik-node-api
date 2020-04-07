@@ -114,8 +114,6 @@ validateCustomer = async (req, res) => {
   let verb = "POST";
   let validationResponse = null;
 
-  console.log("validating customer");
-
   try {
     requestHeaders = interswitchRequestAdapter.getHeaders({ url: url, method: verb });
   } catch (error) {
@@ -128,13 +126,9 @@ validateCustomer = async (req, res) => {
   try {
     validationResponse = await requestPromise(requestOptions);
     validationResponse = interswitchRequestAdapter.parseResponse(validationResponse);
-
-    // return validationResponse.Customers[0];
     return response.ok(res, validationResponse.Customers[0]);
-
   } catch (error) {
     console.log(error.message);
-    // return response.error(res, error);
     response.interswitchError(res, error);
   }
 };
@@ -142,9 +136,18 @@ validateCustomer = async (req, res) => {
 sendPaymentAdvice = async (req, res) => {
 // sendPaymentAdvice = async (customerId, paymentCode, mobileNumber, emailAddress, amount, requestReference) => {
   const pfkUserToken = req.headers['pfk-user-token']
+  const amount = req.body.amount/100
+
   if(!pfkUserToken || pfkUserToken === ''){
     return response.badRequest(res, {message: 'pfk-user-token is required in the request header'});
   }
+
+  let balanceCheck = await checkUserBalance(pfkUserToken, amount)
+
+  if(!balanceCheck){
+    return response.conflict(res, {message: "User does not have enough tokens"});
+  }
+
   let url = `https://saturn.interswitchng.com/api/v2/quickteller/payments/advices`;
   let verb = "POST";
   let adviceResponse = null;
@@ -152,7 +155,6 @@ sendPaymentAdvice = async (req, res) => {
     requestHeaders = interswitchRequestAdapter.getHeaders({ url: url, method: verb });
   } catch (error) {
     console.log(error);
-    
   }
   const requestRef = '1906'+userHelper.generateRandomCode(8);
   let adviceRequest = {
@@ -165,7 +167,8 @@ sendPaymentAdvice = async (req, res) => {
     amount: req.body.amount,
     requestReference: requestRef
   };
-  const amount = req.body.amount/100
+ 
+  // const amount = 1000000
 
   requestHeaders.TerminalId = "3PFK0001"
 
@@ -210,7 +213,36 @@ deductUserTokens = async (userToken, amount) => {
       console.log(error.message);
       return false
     }
+};
+
+
+checkUserBalance = async (userToken, amount, req, res) => {
+  let url = `https://api.payafrik.io/auth/user/balance/`;
+  let verb = "GET";
+  let balanceResponse = null;
+
+  let requestHeaders = {
+    Authorization: userToken,
+    "Content-Type": "application/json"
   };
+
+  let requestOptions = { uri: url, method: verb, headers: requestHeaders};
+  try {
+    balanceResponse = await requestPromise(requestOptions);
+    const balance = JSON.parse(balanceResponse)
+
+    if( balance.balance >= amount ){
+      console.log('this is true')
+      return true
+    } else {
+      return false
+    }
+  } catch (error) {
+    console.log(error.message);
+    return response.error(res, error)
+  }
+};
+
 
 queryTransaction = async (req, res) => {
 // queryTransaction = async transactionReference => {
