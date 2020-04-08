@@ -6,27 +6,36 @@ var ObjectId = Schema.Types.ObjectId;
 // const bcrypt = require('bcrypt');
 const transactionSchema = new mongoose.Schema({
     userId:{
-        type: ObjectId, 
-        ref: 'Users' 
+        type: String
+    },
+    username:{
+        type: String,
     },
     transactionType: {
         type: String,
         enum : ['CASH','TOKEN','CRYPTO'],
-        default: 'CASH'
+        default: 'TOKEN'
     },
     transactionStatus: {
         type: String,
         enum : ['SUCCESSFUL','FAILED','PENDING'],
         default: 'PENDING'
     },
-    transactionReference: {
+    pfkTransactionReference: {
         type: String,
+    },
+    interswitchTransactionRef: {
+        type: String
+    },
+    transactionData: {
+        type: String
     },
     channel: {
         type: String,
         enum : ['PAYSTACK','COINBASE','PAYAFRIK'],
-        default: 'PENDING'
+        default: 'PAYAFRIK'
     },
+      
 }, {
     timestamps: true
 });

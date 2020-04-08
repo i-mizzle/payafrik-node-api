@@ -3,6 +3,7 @@ const keySanitizer = require("keys-to-camelcase");
 const response = require('./../responses');
 const helpers = require("../helper/helpers");
 const userHelper = require('../helper/user');
+const transactionHelper = require('../helper/transaction');
 const interswitchRequestAdapter = require("../helper/interswitch-adpter");
 
 let requestHeaders = {};
@@ -142,11 +143,14 @@ sendPaymentAdvice = async (req, res) => {
     return response.badRequest(res, {message: 'pfk-user-token is required in the request header'});
   }
 
-  let balanceCheck = await checkUserBalance(pfkUserToken, amount)
+  let user = await getUserDetails(pfkUserToken, amount)
 
-  if(!balanceCheck){
+  if(!user.canProceed){
     return response.conflict(res, {message: "User does not have enough tokens"});
   }
+
+  const userId = user.userId
+  const username = user.username
 
   let url = `https://saturn.interswitchng.com/api/v2/quickteller/payments/advices`;
   let verb = "POST";
@@ -178,7 +182,10 @@ sendPaymentAdvice = async (req, res) => {
     adviceResponse = interswitchRequestAdapter.parseResponse(adviceResponse);
     adviceResponse.payafrikTransactionRef = requestRef;
 
+    console.log('ADVICE RESPONSE =======> ', adviceResponse)
+
     await deductUserTokens(pfkUserToken, amount)
+    await transactionHelper.createNewTransaction(username, userId, adviceResponse)
 
     return response.ok(res, adviceResponse);
   } catch (error) {
@@ -216,10 +223,10 @@ deductUserTokens = async (userToken, amount) => {
 };
 
 
-checkUserBalance = async (userToken, amount, req, res) => {
-  let url = `https://api.payafrik.io/auth/user/balance/`;
+getUserDetails = async (userToken, amount, req, res) => {
+  let url = `https://api.payafrik.io/auth/user/profile/`;
   let verb = "GET";
-  let balanceResponse = null;
+  let userResponse = null;
 
   let requestHeaders = {
     Authorization: userToken,
@@ -228,14 +235,22 @@ checkUserBalance = async (userToken, amount, req, res) => {
 
   let requestOptions = { uri: url, method: verb, headers: requestHeaders};
   try {
-    balanceResponse = await requestPromise(requestOptions);
-    const balance = JSON.parse(balanceResponse)
+    userResponse = await requestPromise(requestOptions);
+    const user = JSON.parse(userResponse)
 
-    if( balance.balance >= amount ){
+    if( user.balance >= amount ){
       console.log('this is true')
-      return true
+      return {
+        userId: user.id,
+        username: user.username,
+        canProceed: true
+      }
     } else {
-      return false
+      return {
+        userId: user.id,
+        username: user.username,
+        canProceed: false
+      }
     }
   } catch (error) {
     console.log(error.message);

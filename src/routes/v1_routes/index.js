@@ -3,7 +3,9 @@ const router = require('express').Router();
 const user = require('../../app/controller/user');
 const isAuthenticated = require("./../../middlewares/isAuthenticated");
 const interswitch = require('../../app/controller/interswitch');
+const transactions = require('../../app/controller/transaction');
 const s3 = require('../../app/helper/s3');
+const isPFKAuthenticated = require("./../../middlewares/isPFKAuthenticated");
 
 // add route
 router.post('/login', user.login);
@@ -20,6 +22,8 @@ router.get('/interswitch/biller/:billerId', interswitch.getBillersPaymentItems)
 
 router.post('/interswitch/payment-advice', interswitch.sendPaymentAdvice)
 router.post('/interswitch/validate-customer', interswitch.validateCustomer)
+
+router.get('/interswitch/transactions/user', isPFKAuthenticated, transactions.fetchForUser )
 
 router.get('/interswitch/query-transaction/:payafrikTransactionRef', interswitch.queryTransaction)
 
