@@ -195,7 +195,7 @@ sendPaymentAdvice = async (req, res) => {
   }
 };
 
-deductUserTokens = async (userToken, amount) => {
+deductUserTokens = async (userToken, amount, req, res) => {
     let url = `https://api.payafrik.io/transactions/transactions/send-afk/`;
     let verb = "POST";
     let deductionResponse = null;
@@ -218,7 +218,8 @@ deductUserTokens = async (userToken, amount) => {
       return true
     } catch (error) {
       console.log(error.message);
-      return false
+      return response.error(res, {message: error.message})
+      // return false
     }
 };
 
