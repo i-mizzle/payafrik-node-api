@@ -35,6 +35,18 @@ const transactionSchema = new mongoose.Schema({
         enum : ['PAYSTACK','COINBASE','PAYAFRIK'],
         default: 'PAYAFRIK'
     },
+    tokenDeduction: {
+        status: {
+            type: Boolean,
+            default: true
+        },
+        narration: {
+            type: String
+        }
+    },
+    tokenAmount: {
+        type: Number
+    }
       
 }, {
     timestamps: true

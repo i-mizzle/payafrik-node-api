@@ -6,6 +6,10 @@ const userHelper = require('../helper/user');
 const transactionHelper = require('../helper/transaction');
 const interswitchRequestAdapter = require("../helper/interswitch-adpter");
 
+// TO DO: REfactor transaction checks
+const mongoose = require('mongoose');
+const Transaction = mongoose.model('Transaction');
+
 let requestHeaders = {};
 
 getBillerCategories = async (req, res) => {
@@ -184,9 +188,20 @@ sendPaymentAdvice = async (req, res) => {
 
     console.log('ADVICE RESPONSE =======> ', adviceResponse)
 
-    await deductUserTokens(pfkUserToken, amount)
-    await transactionHelper.createNewTransaction(username, userId, adviceResponse)
-
+    let tokenDeduction = await deductUserTokens(pfkUserToken, amount)
+    if(!tokenDeduction){
+      // save the amount of tokens that need to be deducted
+      let failureObject = {
+          tokenDeduction: {
+            status: false,
+            narration: "Token deduction failed"
+          },
+          amount: amount
+      }
+      await transactionHelper.createNewTransaction(username, userId, adviceResponse, failureObject)
+      return response.error(res, {message: "Token deduction failed, amount blocked"})
+    }
+    await transactionHelper.createNewTransaction(username, userId, adviceResponse, {})
     return response.ok(res, adviceResponse);
   } catch (error) {
     console.log(error.message);
@@ -214,12 +229,12 @@ deductUserTokens = async (userToken, amount, req, res) => {
     let requestOptions = { uri: url, method: verb, headers: requestHeaders, body: JSON.stringify(deductionRequest) };
     try {
       deductionResponse = await requestPromise(requestOptions);
-      console.log(deductionResponse);
+      console.log("deduction Response ====>", deductionResponse);
       return true
     } catch (error) {
-      console.log(error.message);
-      return response.error(res, {message: error.message})
-      // return false
+      console.log("deduction Error ====>", error.message);
+      // return response.error(res, {message: error.message})
+      return false
     }
 };
 
@@ -239,7 +254,19 @@ getUserDetails = async (userToken, amount, req, res) => {
     userResponse = await requestPromise(requestOptions);
     const user = JSON.parse(userResponse)
 
-    if( user.balance >= amount ){
+    // check to see if user has any blocked tokens
+    let userTransactions = await Transaction.find({userId: user.id});
+    console.log('User blocked transactions ========> ', userTransactions)
+    let blockedTotal = 0
+    if (userTransactions && userTransactions.length > 0){
+      userTransactions.forEach(element => {
+        if(!element.tokenDeduction.status){
+          blockedTotal += element.tokenAmount
+        }
+      });
+    }
+
+    if( (user.balance - blockedTotal) >= amount ){
       console.log('this is true')
       return {
         userId: user.id,

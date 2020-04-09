@@ -1,9 +1,13 @@
 'use strict';
 const mongoose = require('mongoose');
+const response = require('./../responses');
 const Transaction = mongoose.model('Transaction');
 
 module.exports = {
-    createNewTransaction: async (username, userId, transactionPayload) => {
+    createNewTransaction: async (username, userId, transactionPayload, failureObject, req, res ) => {
+        if(!failureObject){
+            failureObject = {}
+        }
         try {
             let transaction = new Transaction(
                 { 
@@ -12,13 +16,16 @@ module.exports = {
                     transactionStatus: transactionPayload.responseCodeGrouping,
                     pfkTransactionReference: transactionPayload.payafrikTransactionRef,
                     interswitchTransactionRef: transactionPayload.transactionRef,
-                    transactionData: transactionPayload.rechargePIN || transactionPayload.miscData
+                    transactionData: transactionPayload.rechargePIN || transactionPayload.miscData,
+                    tokenDeduction: failureObject.tokenDeduction,
+                    tokenAmount: failureObject.amount
                 }
             );
 
             await transaction.save();
             return transaction;
         } catch (error) {
+            console.log(error)
             return response.error(res, 'transaction creation failed');
         }
     },
