@@ -188,7 +188,7 @@ sendPaymentAdvice = async (req, res) => {
 
     console.log('ADVICE RESPONSE =======> ', adviceResponse)
 
-    let tokenDeduction = await deductUserTokens(pfkUserToken, amount)
+    let tokenDeduction = await deductUserTokens(pfkUserToken, amount, requestRef)
     if(!tokenDeduction){
       // save the amount of tokens that need to be deducted
       let failureObject = {
@@ -210,8 +210,8 @@ sendPaymentAdvice = async (req, res) => {
   }
 };
 
-deductUserTokens = async (userToken, amount, req, res) => {
-    let url = `https://api.payafrik.io/transactions/transactions/send-afk/`;
+deductUserTokens = async (userToken, amount, requestRef) => {
+    let url = `https://api.payafrik.io/transactions/transactions/send/`;
     let verb = "POST";
     let deductionResponse = null;
 
@@ -221,7 +221,9 @@ deductUserTokens = async (userToken, amount, req, res) => {
     };
     let deductionRequest = {
         "recipient":"shalomz",
-        "requested_amount":amount
+        "requested_amount":amount,
+        "wallet": "AFK",
+        "memo":"Payment for mart item. Ref: " + requestRef
     };
 
     console.log("deductionRequest ====>", deductionRequest)
@@ -267,7 +269,6 @@ getUserDetails = async (userToken, amount, req, res) => {
     }
 
     if( (user.balance - blockedTotal) >= amount ){
-      console.log('this is true')
       return {
         userId: user.id,
         username: user.username,
