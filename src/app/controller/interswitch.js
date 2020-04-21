@@ -40,6 +40,30 @@ getBillerCategories = async (req, res) => {
   }
 };
 
+getBanks = async (req, res) => {
+  // let url = "https://sandbox.interswitchng.com/api/v2/quickteller/categorys";
+  let url = 'https://saturn.interswitchng.com/api/v2/quickteller/configuration/fundstransferbanks';
+  let verb = "GET";
+
+  let banks = null;
+  try {
+    requestHeaders = interswitchRequestAdapter.getHeaders({ url: url, method: verb });
+    requestHeaders.TerminalId = "3PFK0001"
+  } catch (error) {
+    console.log(error);
+  }
+  let requestOptions = { uri: url, method: verb, headers: requestHeaders };
+  console.log("Headers====>", requestHeaders)
+  try {
+    banks = await requestPromise(requestOptions);
+    banks = interswitchRequestAdapter.parseResponse(categories).categorys;
+    return response.ok(res, banks)
+  } catch (error) {
+    console.log(error.message);
+    response.interswitchError(res, error);
+  }
+};
+
 getBillers = async (req, res) => {
   let url = "https://saturn.interswitchng.com/api/v2/quickteller/billers";
   let verb = "GET";
@@ -222,7 +246,7 @@ deductUserTokens = async (userToken, amount, requestRef) => {
     let deductionRequest = {
         "recipient":"shalomz",
         "requested_amount":amount,
-        "wallet": "AFK",
+        "wallet": "AfriToken",
         "memo":"Payment for mart item. Ref: " + requestRef
     };
 
@@ -319,5 +343,6 @@ module.exports = {
   getBillersPaymentItems: getBillersPaymentItems,
   validateCustomer: validateCustomer,
   sendPaymentAdvice: sendPaymentAdvice,
-  queryTransaction: queryTransaction
+  queryTransaction: queryTransaction,
+  getBanks: getBanks
 };

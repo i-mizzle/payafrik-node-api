@@ -17,7 +17,8 @@ module.exports = async ( req, res, next ) => {
         const user = JSON.parse(userResponse)
         req.user = {
             id: user.id,
-            username: user.username
+            username: user.username,
+            tokenBalance: user.balance
         }
         next();
     } catch (error) {
