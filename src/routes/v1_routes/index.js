@@ -20,6 +20,8 @@ router.get('/interswitch/billers', interswitch.getBillers)
 router.get('/interswitch/billers/category/:categoryId', interswitch.getBillersByCategory)
 router.get('/interswitch/biller/:billerId', interswitch.getBillersPaymentItems)
 
+router.get('/interswitch/query-transaction/webpay/:transactionReference/:amount/:productId', interswitch.queryWebPayTransaction)
+
 router.get('/interswitch/banks', interswitch.getBanks)
 
 router.post('/interswitch/payment-advice', interswitch.sendPaymentAdvice)

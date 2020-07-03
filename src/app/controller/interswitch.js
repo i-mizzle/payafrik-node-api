@@ -2,6 +2,7 @@ const requestPromise = require("request-promise");
 const keySanitizer = require("keys-to-camelcase");
 const response = require('./../responses');
 const helpers = require("../helper/helpers");
+const sha512 = require('js-sha512');
 const userHelper = require('../helper/user');
 const transactionHelper = require('../helper/transaction');
 const interswitchRequestAdapter = require("../helper/interswitch-adpter");
@@ -210,8 +211,6 @@ sendPaymentAdvice = async (req, res) => {
     adviceResponse = interswitchRequestAdapter.parseResponse(adviceResponse);
     adviceResponse.payafrikTransactionRef = requestRef;
 
-    console.log('ADVICE RESPONSE =======> ', adviceResponse)
-
     let tokenDeduction = await deductUserTokens(pfkUserToken, amount, requestRef)
     if(!tokenDeduction){
       // save the amount of tokens that need to be deducted
@@ -222,10 +221,10 @@ sendPaymentAdvice = async (req, res) => {
           },
           amount: amount
       }
-      await transactionHelper.createNewTransaction(username, userId, adviceResponse, failureObject)
+      await transactionHelper.createNewTransaction(username, userId, adviceResponse, failureObject, pfkUserToken)
       return response.error(res, {message: "Token deduction failed, amount blocked"})
     }
-    await transactionHelper.createNewTransaction(username, userId, adviceResponse, {})
+    await transactionHelper.createNewTransaction(username, userId, adviceResponse, {}, pfkUserToken)
     return response.ok(res, adviceResponse);
   } catch (error) {
     console.log(error.message);
@@ -255,7 +254,6 @@ deductUserTokens = async (userToken, amount, requestRef) => {
     let requestOptions = { uri: url, method: verb, headers: requestHeaders, body: JSON.stringify(deductionRequest) };
     try {
       deductionResponse = await requestPromise(requestOptions);
-      console.log("deduction Response ====>", deductionResponse);
       return true
     } catch (error) {
       console.log("deduction Error ====>", error.message);
@@ -336,6 +334,43 @@ queryTransaction = async (req, res) => {
   }
 };
 
+queryWebPayTransaction = async (req, res) => {
+  // queryTransaction = async transactionReference => {
+    const transactionReference = req.params.transactionReference
+    const amount = req.params.amount
+    const macKey = 'D3D1D05AFE42AD50818167EAC73C109168A0F108F32645C8B59E897FA930DA44F9230910DAC9E20641823799A107A02068F7BC0F4CC41D2952E249552255710F'
+    const productId = req.params.productId
+    const requestHash = sha512(productId + transactionReference + macKey);
+
+    let requestHeaders = {
+      'Connection': 'Keep-Alive',
+      'Host': 'sandbox.interswitchng.com',
+      'Hash': requestHash,
+    };
+    
+    // let url = `https://saturn.interswitchng.com/api/v2/quickteller/transactions?requestreference=${transactionReference}`;
+    let url = 'https://sandbox.interswitchng.com/webpay/api/v1/gettransaction.json?productId=' + productId + '&transactionreference=' + transactionReference + '&amount=' + amount
+    let verb = "GET";
+    let queryResponse = null;
+
+    // try {
+    //   requestHeaders = interswitchRequestAdapter.getHeaders({ url: url, method: verb });
+    // } catch (error) {
+    //   console.log(error);
+    // }
+  
+    let requestOptions = { uri: url, method: verb, headers: requestHeaders };
+    try {
+      queryResponse = await requestPromise(requestOptions);
+      queryResponse = interswitchRequestAdapter.parseResponse(queryResponse);
+  
+      return response.ok(res, queryResponse);
+    } catch (error) {
+      console.log(error.message);
+      return response.error(res, error);
+    }
+  };
+
 module.exports = {
   getBillerCategories: getBillerCategories,
   getBillers: getBillers,
@@ -344,5 +379,6 @@ module.exports = {
   validateCustomer: validateCustomer,
   sendPaymentAdvice: sendPaymentAdvice,
   queryTransaction: queryTransaction,
-  getBanks: getBanks
+  getBanks: getBanks,
+  queryWebPayTransaction: queryWebPayTransaction
 };
