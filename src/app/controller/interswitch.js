@@ -345,7 +345,7 @@ queryWebPayTransaction = async (req, res) => {
       'Hash': requestHash,
     };
     
-    let url = 'https://sandbox.interswitchng.com/webpay/api/v1/gettransaction.json?productId=' + productId + '&transactionreference=' + transactionReference + '&amount=' + amount
+    let url = 'https://sandbox.interswitchng.com/collections/api/v1/gettransaction.json?productId=' + productId + '&transactionreference=' + transactionReference + '&amount=' + amount
     let verb = "GET";
     let queryResponse = null;
 
