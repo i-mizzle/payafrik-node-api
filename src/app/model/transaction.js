@@ -23,6 +23,7 @@ const transactionSchema = new mongoose.Schema({
     },
     pfkTransactionReference: {
         type: String,
+        unique:true,
     },
     interswitchTransactionRef: {
         type: String
@@ -32,22 +33,18 @@ const transactionSchema = new mongoose.Schema({
     },
     channel: {
         type: String,
-        enum : ['PAYSTACK','COINBASE','PAYAFRIK'],
-        default: 'PAYAFRIK'
+        enum : ['INTERSWITCH', 'PAYSTACK', 'COINBASE'],
+        default: 'INTERSWITCH'
     },
-    tokenDeduction: {
-        status: {
-            type: Boolean,
-            default: true
-        },
-        narration: {
-            type: String
-        }
+    transactionFor: {
+        type: String,
+        enum : ['TOKEN_PURCHASE', 'COIN_PURCHASE'],
+        default: 'TOKEN_PURCHASE'
     },
-    tokenAmount: {
+    amount: {
         type: Number
-    }
-      
+    },
+    channelResponse: {}      
 }, {
     timestamps: true
 });

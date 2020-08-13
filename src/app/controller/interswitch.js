@@ -280,7 +280,6 @@ getUserDetails = async (userToken, amount, req, res) => {
 
     // check to see if user has any blocked tokens
     let userTransactions = await Transaction.find({userId: user.id});
-    console.log('User blocked transactions ========> ', userTransactions)
     let blockedTotal = 0
     if (userTransactions && userTransactions.length > 0){
       userTransactions.forEach(element => {
@@ -311,7 +310,6 @@ getUserDetails = async (userToken, amount, req, res) => {
 
 
 queryTransaction = async (req, res) => {
-// queryTransaction = async transactionReference => {
   let transactionReference = req.params.payafrikTransactionRef
   let url = `https://saturn.interswitchng.com/api/v2/quickteller/transactions?requestreference=${transactionReference}`;
   let verb = "GET";
@@ -335,7 +333,6 @@ queryTransaction = async (req, res) => {
 };
 
 queryWebPayTransaction = async (req, res) => {
-  // queryTransaction = async transactionReference => {
     const transactionReference = req.params.transactionReference
     const amount = req.params.amount
     const macKey = 'D3D1D05AFE42AD50818167EAC73C109168A0F108F32645C8B59E897FA930DA44F9230910DAC9E20641823799A107A02068F7BC0F4CC41D2952E249552255710F'
@@ -348,17 +345,10 @@ queryWebPayTransaction = async (req, res) => {
       'Hash': requestHash,
     };
     
-    // let url = `https://saturn.interswitchng.com/api/v2/quickteller/transactions?requestreference=${transactionReference}`;
     let url = 'https://sandbox.interswitchng.com/webpay/api/v1/gettransaction.json?productId=' + productId + '&transactionreference=' + transactionReference + '&amount=' + amount
     let verb = "GET";
     let queryResponse = null;
 
-    // try {
-    //   requestHeaders = interswitchRequestAdapter.getHeaders({ url: url, method: verb });
-    // } catch (error) {
-    //   console.log(error);
-    // }
-  
     let requestOptions = { uri: url, method: verb, headers: requestHeaders };
     try {
       queryResponse = await requestPromise(requestOptions);
