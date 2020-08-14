@@ -2,26 +2,35 @@
 const response = require('./../responses');
 // const nodemailer = require('nodemailer');
 const mailgun = require("mailgun-js");
-const DOMAIN = 'mg.airhaul.com.ng';
+const config = require("config");
+// const DOMAIN = 'mg.airhaul.com.ng';
 const mg = mailgun({
-    apiKey: '840d174d30f0a00bd27eebd32a27162d-e470a504-e9575579', 
-    domain: DOMAIN
+    apiKey: config.mailgun.API_KEY, 
+    domain: config.mailgun.DOMAIN
 });
 
-const mongoose = require("mongoose");
-const User = mongoose.model('User');
+
 module.exports = {
-    sendEmail: async (mailParams, req, res) => {
+    sendEmail: (mailParams, req, res) => {
         const data = {
-            from: 'Payafrik Admin <no-reply@payafrik.io>',
-            to: mailParams.mailTo,
-            subject: mailParams.subject,
-            text: mailParams.message,
-            // template: "accountconfirmation",
-            // 'h:X-Mailgun-Variables': {}        
+            from: 'Payafrik Ltd <no-reply@payafrik.io>',
+            to: mailParams.receiverEmail,
+            subject: 'Your Token Purchase on Payafrik.io',
+            template: 'payment_receipt',
+            "h:X-Mailgun-Variables": JSON.stringify({
+                paidAmount: mailParams.paidAmount,
+                userName: mailParams.userName,
+                invoiceNumber: mailParams.invoiceNumber,
+                paymentDate: mailParams.paymentDate,
+                tokenCost: mailParams.tokenCost,
+                charges: mailParams.charges
+            })
         };
         mg.messages().send(data, function (error, body) {
-            console.log(body);
+            if(error){
+                console.log('MAILER ERROR++++', error);
+            }
+            console.log('MAILER RESPONSE++++', body);
         });
     }
 }

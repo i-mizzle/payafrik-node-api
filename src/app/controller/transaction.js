@@ -30,7 +30,8 @@ module.exports = {
         }
     },
     
-    pushTransaction: async (transaction) => {
+    pushTransaction: async (req, transaction) => {
+        console.log('the user in transaction push', req.user)
         let url = 'https://api.payafrik.io/transactions/transactions/webhook/';
         let verb = "POST";
         let queryResponse = null;
@@ -63,12 +64,13 @@ module.exports = {
                     pfkTransactionReference: req.params.payafrikTransactionRef,  
                 }
             );
+
             if(transaction){
                 transaction.interswitchTransactionRef = req.body.interswitchTransactionRef || null
                 transaction.transactionStatus = req.body.transactionStatus || null
                 transaction.channelResponse = req.body.channelResponse || null
-                await transaction.save();
-                const transactionPushed = await module.exports.pushTransaction({
+
+                const transactionPushed = await module.exports.pushTransaction(req, {
                     transactionType: transaction.transactionType,
                     transactionStatus: transaction.transactionStatus,
                     pfkTransactionReference: transaction.pfkTransactionReference,
@@ -79,7 +81,18 @@ module.exports = {
                     channelResponse: transaction.channelResponse
                 })
                 
-                if (transactionPushed){
+                if (transactionPushed && transaction.transactionStatus){
+                    let mailParams = {
+                        receiverEmail: req.user.email,
+                        paidAmount: transaction.amount,
+                        userName: req.user.name,
+                        invoiceNumber: transaction.pfkTransactionReference,
+                        paymentDate: new Date(),
+                        tokenCost: transaction.amount,
+                        charges: '0'
+                    }
+    
+                    mailer.sendEmail(mailParams)
                     return response.ok(res, { message: 'transaction has been updated' });
                 }
             } else {
