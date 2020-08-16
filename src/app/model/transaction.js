@@ -11,6 +11,9 @@ const transactionSchema = new mongoose.Schema({
     username:{
         type: String,
     },
+    receiptEmail:{
+        type: String,
+    },
     transactionType: {
         type: String,
         enum : ['CASH','TOKEN','CRYPTO'],

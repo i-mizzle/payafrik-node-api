@@ -73,6 +73,7 @@ module.exports = {
                 const transactionPushed = await module.exports.pushTransaction(req, {
                     transactionType: transaction.transactionType,
                     transactionStatus: transaction.transactionStatus,
+                    receiptEmail: transaction.receiptEmail || 'info@payafrik.io',
                     pfkTransactionReference: transaction.pfkTransactionReference,
                     interswitchTransactionRef: transaction.interswitchTransactionRef,
                     channel: transaction.channel,
@@ -81,9 +82,9 @@ module.exports = {
                     channelResponse: transaction.channelResponse
                 })
                 
-                if (transactionPushed && transaction.transactionStatus){
+                if (transactionPushed && transaction.transactionStatus === 'SUCCESSFUL'){
                     let mailParams = {
-                        receiverEmail: req.user.email,
+                        receiverEmail: transaction.receiptEmail,
                         paidAmount: transaction.amount,
                         userName: req.user.name,
                         invoiceNumber: transaction.pfkTransactionReference,
