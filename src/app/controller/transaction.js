@@ -10,10 +10,12 @@ const Transaction = mongoose.model('Transaction');
 module.exports = {
     create: async (req, res) => {
         try {
+            console.log(req.body)
             let transaction = new Transaction(
                 { 
                     username: req.body.username,
                     transactionType: req.body.transactionType,
+                    receiptEmail: req.body.receiptEmail || 'info@payafrik.io',
                     transactionStatus: req.body.transactionStatus,
                     pfkTransactionReference: req.body.pfkTransactionReference,
                     interswitchTransactionRef: req.body.interswitchTransactionRef,
@@ -40,7 +42,6 @@ module.exports = {
             "X-PFK-TOKEN": config.payafrik.X_PFK_TOKEN
         };
 
-        console.log('ze headers==== ', requestHeaders)
         let requestBody = {data: transaction}
       
         let requestOptions = { uri: url, method: verb, headers: requestHeaders, body: JSON.stringify(requestBody) };
@@ -73,7 +74,6 @@ module.exports = {
                 const transactionPushed = await module.exports.pushTransaction(req, {
                     transactionType: transaction.transactionType,
                     transactionStatus: transaction.transactionStatus,
-                    receiptEmail: transaction.receiptEmail || 'info@payafrik.io',
                     pfkTransactionReference: transaction.pfkTransactionReference,
                     interswitchTransactionRef: transaction.interswitchTransactionRef,
                     channel: transaction.channel,
@@ -81,8 +81,8 @@ module.exports = {
                     amount: transaction.amount,
                     channelResponse: transaction.channelResponse
                 })
-                
-                if (transactionPushed && transaction.transactionStatus === 'SUCCESSFUL'){
+
+                if (transactionPushed && req.body.status === 'SUCCESSFUL'){
                     let mailParams = {
                         receiverEmail: transaction.receiptEmail,
                         paidAmount: transaction.amount,
