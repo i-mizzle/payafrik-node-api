@@ -243,7 +243,7 @@ deductUserTokens = async (userToken, amount, requestRef) => {
       "Content-Type": "application/json"
     };
     let deductionRequest = {
-        "recipient":"shalomz",
+        "recipient":"2347012122232",
         "requested_amount":amount,
         "wallet": "AfriToken",
         "memo":"Payment for mart item. Ref: " + requestRef
@@ -277,19 +277,21 @@ getUserDetails = async (userToken, amount, req, res) => {
   try {
     userResponse = await requestPromise(requestOptions);
     const user = JSON.parse(userResponse)
+    // console.log('USER RESPONSE++++++++>>>>', user)
 
     // check to see if user has any blocked tokens
-    let userTransactions = await Transaction.find({userId: user.id});
-    let blockedTotal = 0
-    if (userTransactions && userTransactions.length > 0){
-      userTransactions.forEach(element => {
-        if(!element.tokenDeduction.status){
-          blockedTotal += element.tokenAmount
-        }
-      });
-    }
+    // let userTransactions = await Transaction.find({userId: user.id});
+    // // console.log('USER TRANSACTIONS===>', userTransactions)
+    // // let blockedTotal = 0
+    // // if (userTransactions && userTransactions.length > 0){
+    // //   userTransactions.forEach(element => {
+    // //     if(!element.tokenDeduction.status){
+    // //       blockedTotal += element.tokenAmount
+    // //     }
+    // //   });
+    // // }
 
-    if( (user.balance - blockedTotal) >= amount ){
+    if(user.balance >= amount ){
       return {
         userId: user.id,
         username: user.username,
@@ -303,7 +305,7 @@ getUserDetails = async (userToken, amount, req, res) => {
       }
     }
   } catch (error) {
-    console.log(error.message);
+    console.log('THE ERROR========', error);
     return response.error(res, error)
   }
 };

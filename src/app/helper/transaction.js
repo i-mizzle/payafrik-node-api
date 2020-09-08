@@ -3,6 +3,7 @@ const mongoose = require('mongoose');
 const response = require('./../responses');
 const Transaction = mongoose.model('Transaction');
 const requestPromise = require("request-promise");
+const config = require("config");
 
 module.exports = {
     createNewTransaction: async (username, userId, transactionPayload, failureObject, userToken) => {
@@ -39,7 +40,8 @@ module.exports = {
         let sendTransactionResponse = null;
 
         let requestHeaders = {
-            "X-PFK-TOKEN": userToken,
+            // "X-PFK-TOKEN": userToken,
+            "X-PFK-TOKEN": config.payafrik.X_PFK_TOKEN,
             "Content-Type": "application/json"
         };
 
