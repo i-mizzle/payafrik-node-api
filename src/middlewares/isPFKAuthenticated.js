@@ -18,7 +18,9 @@ module.exports = async ( req, res, next ) => {
         req.user = {
             id: user.id,
             username: user.username,
-            tokenBalance: user.balance
+            name: user.first_name + " " + user.last_name,
+            tokenBalance: user.balance,
+            email: user.email
         }
         next();
     } catch (error) {
