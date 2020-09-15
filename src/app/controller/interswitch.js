@@ -243,7 +243,7 @@ deductUserTokens = async (userToken, amount, requestRef) => {
       "Content-Type": "application/json"
     };
     let deductionRequest = {
-        "recipient":"2347012122232",
+        "recipient":"254758462513",
         "requested_amount":amount,
         "wallet": "AfriToken",
         "memo":"Payment for mart item. Ref: " + requestRef
