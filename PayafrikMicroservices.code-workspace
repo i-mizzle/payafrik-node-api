@@ -1,0 +1,18 @@
+{
+	"folders": [
+		{
+			"name": "accounts-api",
+			"path": "."
+		},
+		{
+			"name": "kyc-api",
+			"path": "../kyc-api"
+		},
+		{
+			"path": "../notifications-api"
+		},
+		{
+			"path": "../api-gateway"
+		}
+	]
+}

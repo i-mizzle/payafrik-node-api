@@ -16,31 +16,33 @@ const userSchema = new mongoose.Schema({
         unique: true
     },
     email: {
-        type: String,
-        unique: true
-    },
-    phone: {
-        type: String,
-        unique:true,
-        trim: true
+        type: String
     },
     password: {
         type: String,
+        trim: true
     },
-    confirmationCode: {
+    phone: {
+        type: String,
+        unique:true
+    },
+    emailConfirmationCode: {
         type: String,
     },
-    tokens: {
-        type: Number,
-        default: 0
+    phoneConfirmationCode: {
+        type: String,
+    },
+    emailConfirmed:{
+        type:Boolean,
+        default: false
+    },
+    phoneConfirmed:{
+        type:Boolean,
+        default: false
     },
     dob: {
         type: Number,
         default: 0
-    },
-    confirmed:{
-        type:Boolean,
-        default: false
     },
     userType: {
         type: String,
@@ -62,24 +64,7 @@ const userSchema = new mongoose.Schema({
         coordinates: {
             type: String
         },
-    }
-    ,
-    kycDocs: [
-        {
-            documentType: { 
-                type: String, 
-                enum : ['ID','CERTIFICATE']
-            },
-            documentS3Url: { 
-                type: String, 
-            },
-            documentStatus: {
-                type: String,
-                enum : ['APPROVED','PENDING','REJECTED'],
-                default: 'PENDING'
-            },
-        }
-    ],
+    },
     refreshToken: {
         type: String,
         trim: true

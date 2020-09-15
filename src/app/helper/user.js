@@ -6,14 +6,22 @@ const config = require("config");
 
 module.exports = {
     deleteUser: (condition) => {
-        return User.remove(condition);
+        // return User.remove(condition);
     },
     find: (condition) => {
-        return User.findOne(condition, { password: 0, __v: 0 });
+        return User.find(condition, { password: 0, __v: 0 });
     },
-    generateRandomCode: (length) => {
+    generateRandomCode: (length, type) => {
+        if (!type || type === '') type = 'alphanumeric'
         var result           = '';
-        var characters       = 'ABCDEFGHIJKLMNOPQRSTUVWXYZabcdefghijklmnopqrstuvwxyz0123456789';
+        let characters       = '';
+        if (type === 'alphanumeric'){
+            characters = 'ABCDEFGHIJKLMNOPQRSTUVWXYZabcdefghijklmnopqrstuvwxyz0123456789';
+            // add date string at the beginning of the result
+            result = Date.now()
+        } else {
+            characters = '0123456789';
+        }
         var charactersLength = characters.length;
         for ( var i = 0; i < length; i++ ) {
            result += characters.charAt(Math.floor(Math.random() * charactersLength));
