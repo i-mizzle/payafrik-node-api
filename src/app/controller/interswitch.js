@@ -179,7 +179,7 @@ validateCustomer = async (req, res) => {
     response.interswitchError(res, error);
   }
 };
-
+// 
 sendPaymentAdvice = async (req, res) => {
   // sendPaymentAdvice = async (customerId, paymentCode, mobileNumber, emailAddress, amount, requestReference) => {
   const pfkUserToken = req.headers['pfk-user-token']
