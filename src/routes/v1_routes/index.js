@@ -3,6 +3,7 @@ const router = require('express').Router();
 const user = require('../../app/controller/user');
 const isAuthenticated = require("./../../middlewares/isAuthenticated");
 const interswitch = require('../../app/controller/interswitch');
+const superpay = require('../../app/controller/superpay');
 const transactions = require('../../app/controller/transaction');
 const s3 = require('../../app/helper/s3');
 const isPFKAuthenticated = require("./../../middlewares/isPFKAuthenticated");
@@ -22,6 +23,11 @@ router.get('/interswitch/query-transaction/webpay/:transactionReference/:amount/
 router.get('/interswitch/banks', interswitch.getBanks)
 router.post('/interswitch/payment-advice', interswitch.sendPaymentAdvice)
 router.post('/interswitch/validate-customer', interswitch.validateCustomer)
+
+// SUPERPAY ENDPOINTS
+router.post('/superpay/aedc/validate-customer', isPFKAuthenticated, superpay.validateAEDCCustomer)
+router.post('/superpay/aedc/payment', isPFKAuthenticated, superpay.payForAEDC)
+router.post('/superpay/aedc/verify-payment', isPFKAuthenticated, superpay.validateAEDCCustomer)
 
 // TRANSACTIONS
 router.post('/interswitch/transactions/new', isPFKAuthenticated, transactions.create)
