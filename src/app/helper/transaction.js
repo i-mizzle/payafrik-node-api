@@ -23,10 +23,8 @@ module.exports = {
                     tokenAmount: failureObject.amount
                 }
             );
-
             let savedTransaction = await transaction.save();
             await module.exports.sendTransactionDetails(userToken, savedTransaction)
-
             return transaction;
         } catch (error) {
             console.log(error)
@@ -58,6 +56,35 @@ module.exports = {
             console.log("send transaction Error ====>", error.message);
             // return response.error(res, {message: error.message})
             return false
+        }
+    },
+
+    deductUserTokens: async (userToken, amount, requestRef) => {
+        let url = `https://api.payafrik.io/transactions/transactions/send/`;
+        let verb = "POST";
+        let deductionResponse = null;
+    
+        let requestHeaders = {
+          Authorization: userToken,
+          "Content-Type": "application/json"
+        };
+        let deductionRequest = {
+            "recipient":"254758462513",
+            "requested_amount":amount,
+            "wallet": "AfriToken",
+            "memo":"Payment for mart item. Ref: " + requestRef
+        };
+    
+        console.log("deductionRequest ====>", deductionRequest)
+      
+        let requestOptions = { uri: url, method: verb, headers: requestHeaders, body: JSON.stringify(deductionRequest) };
+        try {
+          deductionResponse = await requestPromise(requestOptions);
+          return true
+        } catch (error) {
+          console.log("deduction Error ====>", error.message);
+          // return response.error(res, {message: error.message})
+          return false
         }
     },
 
