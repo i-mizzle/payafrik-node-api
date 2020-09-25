@@ -1,4 +1,5 @@
 'use strict';
+const requestPromise = require("request-promise");
 const mongoose = require('mongoose');
 const User = mongoose.model('User');
 const NodeGeocoder = require('node-geocoder');
@@ -55,6 +56,53 @@ module.exports = {
             console.log('GEOCODER ERROR ++++++++++', err);
             return
         }
-    }
+    },
+
+    checkUserCanProceed: async (userToken, amount, req, res) => {
+        let url = `https://api.payafrik.io/auth/user/profile/`;
+        let verb = "GET";
+        let userResponse = null;
+      
+        let requestHeaders = {
+          Authorization: userToken,
+          "Content-Type": "application/json"
+        };
+      
+        let requestOptions = { uri: url, method: verb, headers: requestHeaders};
+        try {
+          userResponse = await requestPromise(requestOptions);
+          const user = JSON.parse(userResponse)
+          console.log('USER RESPONSE++++++++>>>>', user)
+      
+          // check to see if user has any blocked tokens
+          // let userTransactions = await Transaction.find({userId: user.id});
+          // // console.log('USER TRANSACTIONS===>', userTransactions)
+          // // let blockedTotal = 0
+          // // if (userTransactions && userTransactions.length > 0){
+          // //   userTransactions.forEach(element => {
+          // //     if(!element.tokenDeduction.status){
+          // //       blockedTotal += element.tokenAmount
+          // //     }
+          // //   });
+          // // }
+          console.log('AMOUNT:::: ', amount)
+          if( user.balance >= amount ){
+            return {
+              userId: user.id,
+              username: user.username,
+              canProceed: true
+            }
+          } else {
+            return {
+              userId: user.id,
+              username: user.username,
+              canProceed: false
+            }
+          }
+        } catch (error) {
+          console.log('THE ERROR========', error);
+          return response.error(res, error)
+        }
+      }
 
 };
