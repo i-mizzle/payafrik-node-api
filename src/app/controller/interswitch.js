@@ -251,34 +251,6 @@ sendPaymentAdvice = async (req, res) => {
 };
 
 deductUserTokens = async (userToken, amount, requestRef) => {
-<<<<<<< HEAD
-    let url = `https://api.payafrik.io/transactions/transactions/send/`;
-    let verb = "POST";
-    let deductionResponse = null;
-
-    let requestHeaders = {
-      Authorization: userToken,
-      "Content-Type": "application/json"
-    };
-    let deductionRequest = {
-        "recipient":"254758462513",
-        "requested_amount":amount,
-        "wallet": "AfriToken",
-        "memo":"Payment for mart item. Ref: " + requestRef
-    };
-
-    console.log("deductionRequest ====>", deductionRequest)
-  
-    let requestOptions = { uri: url, method: verb, headers: requestHeaders, body: JSON.stringify(deductionRequest) };
-    try {
-      deductionResponse = await requestPromise(requestOptions);
-      return true
-    } catch (error) {
-      console.log("deduction Error ====>", error.message);
-      // return response.error(res, {message: error.message})
-      return false
-    }
-=======
   let url = `https://api.payafrik.io/transactions/transactions/send/`;
   let verb = "POST";
   let deductionResponse = null;
@@ -305,7 +277,6 @@ deductUserTokens = async (userToken, amount, requestRef) => {
     // return response.error(res, {message: error.message})
     return false
   }
->>>>>>> 5ffc0d0f620026459b9204b4e2514387de1ca0b3
 };
 
 
@@ -422,3 +393,4 @@ module.exports = {
   getBanks: getBanks,
   queryWebPayTransaction: queryWebPayTransaction
 };
+
