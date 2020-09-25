@@ -6,7 +6,7 @@ const requestPromise = require("request-promise");
 const config = require("config");
 
 module.exports = {
-    createNewTransaction: async (username, userId, transactionPayload, failureObject, userToken) => {
+    createNewTransaction: async (username, userId, transactionAmount, transactionPayload, failureObject, userToken) => {
         if (!failureObject) {
             failureObject = {}
         }
@@ -16,6 +16,7 @@ module.exports = {
                     userId: userId,
                     username: username,
                     transactionStatus: transactionPayload.responseCodeGrouping,
+                    amount: transactionAmount,
                     pfkTransactionReference: transactionPayload.payafrikTransactionRef,
                     interswitchTransactionRef: transactionPayload.transactionRef,
                     transactionData: transactionPayload.rechargePIN || transactionPayload.miscData,
@@ -33,6 +34,7 @@ module.exports = {
     },
 
     sendTransactionDetails: async (userToken, transaction) => {
+        console.loglog
         let url = `https://api.payafrik.io/transactions/transactions/webhook/`;
         let verb = "POST";
         let sendTransactionResponse = null;

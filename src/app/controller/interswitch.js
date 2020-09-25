@@ -238,10 +238,10 @@ sendPaymentAdvice = async (req, res) => {
         },
         amount: amount
       }
-      await transactionHelper.createNewTransaction(username, userId, adviceResponse, failureObject, pfkUserToken)
+      await transactionHelper.createNewTransaction(username, userId, amount, adviceResponse, failureObject, pfkUserToken)
       return response.error(res, { message: "Token deduction failed, amount blocked" })
     }
-    await transactionHelper.createNewTransaction(username, userId, adviceResponse, {}, pfkUserToken)
+    await transactionHelper.createNewTransaction(username, userId, amount, adviceResponse, {}, pfkUserToken)
     return response.ok(res, adviceResponse);
   } catch (error) {
     console.log(error.message);
@@ -323,7 +323,7 @@ getUserDetails = async (userToken, amount, req, res) => {
   try {
     userResponse = await requestPromise(requestOptions);
     const user = JSON.parse(userResponse)
-    // console.log('USER RESPONSE++++++++>>>>', user)
+    console.log('USER RESPONSE++++++++>>>>', user)
 
     // check to see if user has any blocked tokens
     // let userTransactions = await Transaction.find({userId: user.id});
