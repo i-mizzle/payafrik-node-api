@@ -21,6 +21,7 @@ module.exports = {
                     interswitchTransactionRef: req.body.interswitchTransactionRef,
                     channel: req.body.channel,
                     transactionFor: req.body.transactionFor,
+                    currency: req.body.currency,
                     amount: req.body.amount,
                     channelResponse: req.body.channelResponse
                 }
@@ -72,12 +73,14 @@ module.exports = {
                 transaction.channelResponse = req.body.channelResponse || null
 
                 const transactionPushed = await module.exports.pushTransaction(req, {
+                    username: transaction.username,
                     transactionType: transaction.transactionType,
                     transactionStatus: transaction.transactionStatus,
                     pfkTransactionReference: transaction.pfkTransactionReference,
                     interswitchTransactionRef: transaction.interswitchTransactionRef,
                     channel: transaction.channel,
                     transactionFor: transaction.transactionFor,
+                    currency: transaction.currency,
                     amount: transaction.amount,
                     channelResponse: transaction.channelResponse
                 })
