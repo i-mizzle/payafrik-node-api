@@ -99,10 +99,10 @@ module.exports = {
                     },
                     amount: amount
                 }
-                await transactionHelper.createNewTransaction(username, userId, parsedPaymentResponse, failureObject, pfkUserToken)
+                await transactionHelper.createNewTransaction(username, userId, parsedPaymentResponse.message.TotalCustomerCharge, parsedPaymentResponse, failureObject, pfkUserToken, res)
                 return response.error(res, { message: "Token deduction failed, amount blocked" })
             }
-            await transactionHelper.createNewTransaction(username, userId, parsedPaymentResponse, {}, pfkUserToken)
+            await transactionHelper.createNewTransaction(username, userId, parsedPaymentResponse.message.TotalCustomerCharge,  parsedPaymentResponse, {}, pfkUserToken, res)
             return response.ok(res, parsedPaymentResponse);
         } catch (error) {
             console.log(error.message);

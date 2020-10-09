@@ -6,7 +6,8 @@ const requestPromise = require("request-promise");
 const config = require("config");
 
 module.exports = {
-    createNewTransaction: async (username, userId, transactionAmount, transactionPayload, failureObject, userToken) => {
+    createNewTransaction: async (username, userId, transactionAmount, transactionPayload, failureObject, userToken, res) => {
+        console.log('Transaction Amount++++', transactionAmount)
         if (!failureObject) {
             failureObject = {}
         }
@@ -16,7 +17,7 @@ module.exports = {
                     userId: userId,
                     username: username,
                     transactionStatus: transactionPayload.responseCodeGrouping,
-                    amount: transactionAmount,
+                    amount: +transactionAmount,
                     pfkTransactionReference: transactionPayload.payafrikTransactionRef,
                     interswitchTransactionRef: transactionPayload.transactionRef,
                     transactionData: transactionPayload.rechargePIN || transactionPayload.miscData,
@@ -62,7 +63,7 @@ module.exports = {
     },
 
     deductUserTokens: async (userToken, amount, requestRef) => {
-        let url = `https://api.payafrik.io/transactions/transactions/send/`;
+        let url = `https://api.payafrik.io/exchange/utilities/transfer/`;
         let verb = "POST";
         let deductionResponse = null;
     
@@ -70,12 +71,20 @@ module.exports = {
           Authorization: userToken,
           "Content-Type": "application/json"
         };
+        // let deductionRequest = {
+        //     "recipient":"254758462513",
+        //     "requested_amount":amount,
+        //     "wallet": "AfriToken",
+        //     "memo":"Payment for mart item. Ref: " + requestRef
+        // };
+
         let deductionRequest = {
-            "recipient":"254758462513",
-            "requested_amount":amount,
-            "wallet": "AfriToken",
-            "memo":"Payment for mart item. Ref: " + requestRef
-        };
+            "recipient": "254758462513",
+            "amount": amount,
+            "currency":"AFRITOKEN",
+            "memo": "Payment for mart item. Ref: " + requestRef,
+            "address_type":"USERNAME"
+          };
     
         console.log("deductionRequest ====>", deductionRequest)
       
