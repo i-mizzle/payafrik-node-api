@@ -24,7 +24,7 @@ module.exports = async ( req, res, next ) => {
         }
         next();
     } catch (error) {
-      console.log(error.message);
-      return response.badRequest(res, {message: error.message})
+      const parsedError = JSON.parse(error.error);
+      return response.badRequest(res, {message: parsedError.detail})
     }
   };

@@ -35,7 +35,6 @@ module.exports = {
     },
 
     sendTransactionDetails: async (userToken, transaction) => {
-        console.loglog
         let url = `https://api.payafrik.io/transactions/transactions/webhook/`;
         let verb = "POST";
         let sendTransactionResponse = null;
@@ -91,6 +90,7 @@ module.exports = {
         let requestOptions = { uri: url, method: verb, headers: requestHeaders, body: JSON.stringify(deductionRequest) };
         try {
           deductionResponse = await requestPromise(requestOptions);
+          console.log("deduction Error ====>", deductionResponse);
           return true
         } catch (error) {
           console.log("deduction Error ====>", error.message);

@@ -3,6 +3,7 @@ const response = require('./../responses');
 const config = require("config");
 const userHelper = require('../helper/user');
 const transactionHelper = require('../helper/transaction');
+const sms = require('../helper/sms');
 
 module.exports = {
     validateAEDCCustomer: async (req, res) => {
@@ -44,7 +45,7 @@ module.exports = {
 
             return response.ok(res, parsedValidationResponse.message)
         } catch (error) {
-            console.log("AEDC VALIDATION Error ====>", error.message);
+            console.log("AEDC VALIDATION Error ====>", error);
             return response.error(res, { message: error.message })
             // return false
         }
@@ -89,6 +90,10 @@ module.exports = {
             }
             parsedPaymentResponse.payafrikTransactionRef = requestRef;
 
+            await sms.sendMessage({
+                recipient: username,
+                messageBody: "You have successfully purchased " + parsedPaymentResponse.message.units + " units from Payafrik. Your Prepaid Token: " + parsedPaymentResponse.message.pincode
+            })
             let tokenDeduction = await transactionHelper.deductUserTokens(pfkUserToken, amount, requestRef)
             if (!tokenDeduction) {
                 // save the amount of tokens that need to be deducted
