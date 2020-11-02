@@ -41,7 +41,7 @@ const transactionSchema = new mongoose.Schema({
     },
     transactionFor: {
         type: String,
-        enum : ['TOKEN_PURCHASE', 'COIN_PURCHASE'],
+        enum : ['TOKEN_PURCHASE', 'COIN_PURCHASE', 'MART_PURCHASE_VIA_TOKEN'],
         default: 'TOKEN_PURCHASE'
     },
     currency: {

@@ -94,20 +94,20 @@ module.exports = {
                 recipient: username,
                 messageBody: "You have successfully purchased " + parsedPaymentResponse.message.units + " units from Payafrik. Your Prepaid Token: " + parsedPaymentResponse.message.pincode
             })
-            let tokenDeduction = await transactionHelper.deductUserTokens(pfkUserToken, amount, requestRef)
-            if (!tokenDeduction) {
-                // save the amount of tokens that need to be deducted
-                let failureObject = {
-                    tokenDeduction: {
-                        status: false,
-                        narration: "Token deduction failed"
-                    },
-                    amount: amount
-                }
-                await transactionHelper.createNewTransaction(username, userId, parsedPaymentResponse.message.TotalCustomerCharge, parsedPaymentResponse, failureObject, pfkUserToken, res)
-                return response.error(res, { message: "Token deduction failed, amount blocked" })
-            }
-            await transactionHelper.createNewTransaction(username, userId, parsedPaymentResponse.message.TotalCustomerCharge,  parsedPaymentResponse, {}, pfkUserToken, res)
+            // let tokenDeduction = await transactionHelper.deductUserTokens(pfkUserToken, amount, requestRef)
+            // if (!tokenDeduction) {
+            //     // save the amount of tokens that need to be deducted
+            //     let failureObject = {
+            //         tokenDeduction: {
+            //             status: false,
+            //             narration: "Token deduction failed"
+            //         },
+            //         amount: amount
+            //     }
+            //     await transactionHelper.createNewTransaction(username, userId, parsedPaymentResponse.message.TotalCustomerCharge, parsedPaymentResponse, failureObject, pfkUserToken, res)
+            //     return response.error(res, { message: "Token deduction failed, amount blocked" })
+            // }
+            await transactionHelper.createNewTransaction('MART_PURCHASE_VIA_TOKEN', username, userId, parsedPaymentResponse.message.TotalCustomerCharge,  parsedPaymentResponse, {}, pfkUserToken, res)
             return response.ok(res, parsedPaymentResponse);
         } catch (error) {
             console.log(error.message);

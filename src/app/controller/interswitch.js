@@ -228,20 +228,20 @@ sendPaymentAdvice = async (req, res) => {
     adviceResponse = interswitchRequestAdapter.parseResponse(adviceResponse);
     adviceResponse.payafrikTransactionRef = requestRef;
 
-    let tokenDeduction = await deductUserTokens(pfkUserToken, amount, requestRef)
-    if (!tokenDeduction) {
-      // save the amount of tokens that need to be deducted
-      let failureObject = {
-        tokenDeduction: {
-          status: false,
-          narration: "Token deduction failed"
-        },
-        amount: amount
-      }
-      await transactionHelper.createNewTransaction(username, userId, amount, adviceResponse, failureObject, pfkUserToken)
-      return response.error(res, { message: "Token deduction failed, amount blocked" })
-    }
-    await transactionHelper.createNewTransaction(username, userId, amount, adviceResponse, {}, pfkUserToken)
+    // let tokenDeduction = await deductUserTokens(pfkUserToken, amount, requestRef)
+    // if (!tokenDeduction) {
+    //   // save the amount of tokens that need to be deducted
+    //   let failureObject = {
+    //     tokenDeduction: {
+    //       status: false,
+    //       narration: "Token deduction failed"
+    //     },
+    //     amount: amount
+    //   }
+    //   await transactionHelper.createNewTransaction(username, userId, amount, adviceResponse, failureObject, pfkUserToken)
+    //   return response.error(res, { message: "Token deduction failed, amount blocked" })
+    // }
+    await transactionHelper.createNewTransaction('MART_PURCHASE_VIA_TOKEN', username, userId, amount, adviceResponse, {}, pfkUserToken)
     return response.ok(res, adviceResponse);
   } catch (error) {
     console.log(error.message);
@@ -267,6 +267,8 @@ deductUserTokens = async (userToken, amount, requestRef) => {
     "address_type":"USERNAME"
   };
 
+  console.log("deductionHEADERS ====>", requestHeaders)
+  console.log("deductionURL ====>", url)
   console.log("deductionRequest ====>", deductionRequest)
 
   let requestOptions = { uri: url, method: verb, headers: requestHeaders, body: JSON.stringify(deductionRequest) };

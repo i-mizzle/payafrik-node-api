@@ -6,7 +6,7 @@ const requestPromise = require("request-promise");
 const config = require("config");
 
 module.exports = {
-    createNewTransaction: async (username, userId, transactionAmount, transactionPayload, failureObject, userToken, res) => {
+    createNewTransaction: async (transactionFor, username, userId, transactionAmount, transactionPayload, failureObject, userToken, res) => {
         console.log('Transaction Amount++++', transactionAmount)
         if (!failureObject) {
             failureObject = {}
@@ -18,6 +18,7 @@ module.exports = {
                     username: username,
                     transactionStatus: transactionPayload.responseCodeGrouping,
                     amount: +transactionAmount,
+                    transactionFor: transactionFor,
                     pfkTransactionReference: transactionPayload.payafrikTransactionRef,
                     interswitchTransactionRef: transactionPayload.transactionRef,
                     transactionData: transactionPayload.rechargePIN || transactionPayload.miscData,
@@ -85,6 +86,8 @@ module.exports = {
             "address_type":"USERNAME"
           };
     
+        console.log("deductionHEADERS ====>", requestHeaders)
+        console.log("deductionURL ====>", url)
         console.log("deductionRequest ====>", deductionRequest)
       
         let requestOptions = { uri: url, method: verb, headers: requestHeaders, body: JSON.stringify(deductionRequest) };
