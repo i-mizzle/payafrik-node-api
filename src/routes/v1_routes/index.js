@@ -3,6 +3,7 @@ const router = require('express').Router();
 const user = require('../../app/controller/user');
 const isAuthenticated = require("./../../middlewares/isAuthenticated");
 const interswitch = require('../../app/controller/interswitch');
+const flutterwave = require('../../app/controller/flutterwave');
 const superpay = require('../../app/controller/superpay');
 const transactions = require('../../app/controller/transaction');
 const s3 = require('../../app/helper/s3');
@@ -20,9 +21,22 @@ router.get('/interswitch/billers', interswitch.getBillers)
 router.get('/interswitch/billers/category/:categoryId', interswitch.getBillersByCategory)
 router.get('/interswitch/biller/:billerId', interswitch.getBillersPaymentItems)
 router.get('/interswitch/query-transaction/webpay/:transactionReference/:amount/:productId', interswitch.queryWebPayTransaction)
-router.get('/interswitch/banks', interswitch.getBanks)
 router.post('/interswitch/payment-advice', interswitch.sendPaymentAdvice)
 router.post('/interswitch/validate-customer', interswitch.validateCustomer)
+
+// INTERSWITCH FUNDS TRANSFER
+router.get('/interswitch/banks', interswitch.getBanks)
+router.post('/interswitch/banks/validate-customer', isPFKAuthenticated, interswitch.validateCustomerName)
+router.post('/interswitch/cards/fund-card', isPFKAuthenticated, interswitch.fundPrepaidCard)
+
+// FLUTTERWAVE
+router.get('/flutterwave/banks/:country', isPFKAuthenticated, flutterwave.getBanks)
+router.post('/flutterwave/banks/validate-account', isPFKAuthenticated, flutterwave.validateAccount)
+router.post('/flutterwave/banks/transfer/charges', isPFKAuthenticated, flutterwave.getTransferCharges)
+router.post('/flutterwave/banks/transfer', isPFKAuthenticated, flutterwave.transferFunds)
+router.get('/flutterwave/banks/transfers', isPFKAuthenticated, flutterwave.getAllTransfers)
+router.get('/flutterwave/banks/transfer/:transferId', isPFKAuthenticated, flutterwave.getTransferById)
+
 
 // SUPERPAY ENDPOINTS
 router.post('/superpay/aedc/validate-customer', isPFKAuthenticated, superpay.validateAEDCCustomer)

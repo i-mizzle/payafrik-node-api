@@ -6,10 +6,13 @@ const requestPromise = require("request-promise");
 const config = require("config");
 
 module.exports = {
-    createNewTransaction: async (transactionFor, username, userId, transactionAmount, transactionPayload, failureObject, userToken, res) => {
+    createNewTransaction: async (transactionFor, username, userId, transactionAmount, transactionPayload, failureObject, userToken, res, channel) => {
         console.log('Transaction Amount++++', transactionAmount)
         if (!failureObject) {
             failureObject = {}
+        }
+        if (!channel) {
+            channel = null
         }
         try {
             let transaction = new Transaction(
@@ -21,6 +24,7 @@ module.exports = {
                     transactionFor: transactionFor,
                     pfkTransactionReference: transactionPayload.payafrikTransactionRef,
                     interswitchTransactionRef: transactionPayload.transactionRef,
+                    channel: channel,
                     transactionData: transactionPayload.rechargePIN || transactionPayload.miscData,
                     tokenDeduction: failureObject.tokenDeduction,
                     tokenAmount: failureObject.amount
@@ -49,6 +53,8 @@ module.exports = {
         let requestBody = {
             data: transaction
         };
+        
+        console.log('TRANSACTION REQUEST BODY', requestBody)
 
         let requestOptions = { uri: url, method: verb, headers: requestHeaders, body: JSON.stringify(requestBody) };
         try {

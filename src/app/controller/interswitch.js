@@ -27,11 +27,11 @@ getBillerCategories = async (req, res) => {
   }
   let requestOptions = { uri: url, method: verb, headers: requestHeaders };
   try {
+    console.log("Headers====>", requestHeaders)
     categories = await requestPromise(requestOptions);
     categories = interswitchRequestAdapter.parseResponse(categories).categorys;
 
     // console.log(categories.length);
-
     // return categories;
     return response.ok(res, categories)
     // console.log(categories);
@@ -43,7 +43,7 @@ getBillerCategories = async (req, res) => {
 };
 
 getBanks = async (req, res) => {
-  // let url = "https://sandbox.interswitchng.com/api/v2/quickteller/categorys";
+  // let url = "https://sandbox.interswitchng.com/api/v2/quickteller/configuration/fundstransferbanks";
   let url = 'https://saturn.interswitchng.com/api/v2/quickteller/configuration/fundstransferbanks';
   let verb = "GET";
 
@@ -58,13 +58,136 @@ getBanks = async (req, res) => {
   console.log("Headers====>", requestHeaders)
   try {
     banks = await requestPromise(requestOptions);
-    banks = interswitchRequestAdapter.parseResponse(categories).categorys;
+    // console.log('BANKS====> ', banks)
+    banks = interswitchRequestAdapter.parseResponse(banks);
     return response.ok(res, banks)
+  } catch (error) {
+    console.log('ERROR========> ', error.message);
+    response.interswitchError(res, error);
+  }
+};
+
+validateCustomerName = async (req, res) => {
+  const bankCode = req.body.bankCbnCode;
+  const accountId = req.body.accountNumber;
+  let url = 'https://saturn.interswitchng.com/api/v1/nameenquiry/banks/accounts/names';
+  let verb = "GET";
+
+  let validationResponse = null;
+
+  try {
+    requestHeaders = interswitchRequestAdapter.getHeaders({ url: url, method: verb });
+  } catch (error) {
+    console.log(error);
+  }
+  requestHeaders.bankCode = bankCode
+  requestHeaders.accountId = accountId
+
+  let requestOptions = { uri: url, method: verb, headers: requestHeaders };
+  console.log("Headers====>", requestHeaders)
+  try {
+    validationResponse = await requestPromise(requestOptions);
+
+    console.log('RESPONSE ===> ', validationResponse)
+    // validationResponse = interswitchRequestAdapter.parseResponse(validationResponse);
+    // return response.ok(res, validationResponse.Customers[0]);
   } catch (error) {
     console.log(error.message);
     response.interswitchError(res, error);
   }
-};
+}
+
+// transferFunds = async (req, res) => {
+
+// }
+
+fundPrepaidCard = async (req, res) => {
+
+  const pfkUserToken = req.headers['pfk-user-token']
+
+  const amount = req.body.amount;
+  const initiatingCurrencyCode = req.body.initiatingCurrencyCode;
+  const terminatingCurrencyCode = req.body.terminatingCurrencyCode;
+  const initiatingPaymentMethodCode = req.body.initiatingPaymentMethodCode;
+  const terminatingPaymentMethodCode = req.body.terminatingPaymentMethodCode;
+  const terminatingCountryCode = req.body.terminatingPaymentMethodCode;
+  const cardNumber = req.body.cardNumber;
+
+  const amountInMajorCurrency = amount / 100
+
+  let user = await getUserDetails(pfkUserToken, amountInMajorCurrency)
+
+  // calculating MAC
+  // macCipher = InitiatingAmount + InitiatingCurrencyCode + InitiatingPaymentMethodCode + TerminatingAmount + TerminatingCurrencyCode
+  // + TerminatingPaymentMethodCode + TerminatingCountryCode
+  // MAC = SHA512(macCipher)
+
+  const macCipher = amount + initiatingCurrencyCode + initiatingPaymentMethodCode + amount + terminatingCurrencyCode + terminatingPaymentMethodCode + terminatingCountryCode
+  const mac = sha512(macCipher)
+
+  let requestPayload = {
+    mac: mac,
+    beneficiary: {
+      lastname: user.userLastName,
+      othernames: user.userFirstName,
+      phone: user.userPhoneNumber
+    },
+    initiatingEntityCode: "PFK",
+    initiation: {
+      amount: amount,
+      channel: "7",
+      currencyCode: "566",
+      paymentMethodCode: "CA"
+    },
+    sender: {
+      email: "info@payafrik.io",
+      lastname: "Limited",
+      othernames: "Payafrik",
+      phone: "08124888436"
+    },
+    termination: {
+      accountReceivable: {
+        accountNumber: cardNumber,
+        accountType: "00"
+      },
+      amount: amount,
+      countryCode: "NG",
+      currencyCode: "566",
+      // entityCode: "058",
+      paymentMethodCode: "CD"
+    },
+    transferCode: '1906' + userHelper.generateRandomCode(8, true)
+  }
+  console.log('TRANSFER TO CARD PAYLOAD => ', requestPayload)
+
+
+  let url = `https://saturn.interswitchng.com/api/v2/quickteller/payments/transfers`;
+  let verb = "POST";
+  let transferResponse = null;
+
+  try {
+    requestHeaders = interswitchRequestAdapter.getHeaders({ url: url, method: verb });
+  } catch (error) {
+    console.log(error);
+  }
+
+  console.log('TRANSFER TO CARD HEADERS => ', requestHeaders)
+
+
+  // let customerResuest = {
+  //   customers: [{ customerId: customerId, paymentCode: paymentCode }]
+  // };
+  let requestOptions = { uri: url, method: verb, headers: requestHeaders, body: JSON.stringify(requestPayload) };
+  try {
+    transferResponse = await requestPromise(requestOptions);
+    transferResponse = interswitchRequestAdapter.parseResponse(transferResponse);
+
+    return response.ok(res, validationResponse.Customers[0]);
+  } catch (error) {
+    console.log(error.message);
+    response.interswitchError(res, error);
+  }
+}
 
 getBillers = async (req, res) => {
   let url = "https://saturn.interswitchng.com/api/v2/quickteller/billers";
@@ -262,9 +385,9 @@ deductUserTokens = async (userToken, amount, requestRef) => {
   let deductionRequest = {
     "recipient": "254758462513",
     "amount": amount,
-    "currency":"AFRITOKEN",
+    "currency": "AFRITOKEN",
     "memo": "Payment for mart item. Ref: " + requestRef,
-    "address_type":"USERNAME"
+    "address_type": "USERNAME"
   };
 
   console.log("deductionHEADERS ====>", requestHeaders)
@@ -315,6 +438,9 @@ getUserDetails = async (userToken, amount, req, res) => {
       return {
         userId: user.id,
         username: user.username,
+        userFirstName: user.first_name,
+        userLastName: user.last_name,
+        userPhoneNumber: user.phone,
         canProceed: true
       }
     } else {
@@ -393,7 +519,9 @@ module.exports = {
   validateCustomer: validateCustomer,
   sendPaymentAdvice: sendPaymentAdvice,
   queryTransaction: queryTransaction,
+  queryWebPayTransaction: queryWebPayTransaction,
   getBanks: getBanks,
-  queryWebPayTransaction: queryWebPayTransaction
+  validateCustomerName: validateCustomerName,
+  fundPrepaidCard: fundPrepaidCard
 };
 

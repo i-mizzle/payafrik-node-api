@@ -36,12 +36,12 @@ const transactionSchema = new mongoose.Schema({
     },
     channel: {
         type: String,
-        enum : ['INTERSWITCH', 'PAYSTACK', 'COINBASE'],
+        enum : ['INTERSWITCH', 'PAYSTACK', 'COINBASE', 'FLUTTERWAVE'],
         default: 'INTERSWITCH'
     },
     transactionFor: {
         type: String,
-        enum : ['TOKEN_PURCHASE', 'COIN_PURCHASE', 'MART_PURCHASE_VIA_TOKEN'],
+        enum : ['TOKEN_PURCHASE', 'COIN_PURCHASE', 'MART_PURCHASE_VIA_TOKEN', 'TOKEN_WITHDRAWAL_TO_BANK_ACCOUNT'],
         default: 'TOKEN_PURCHASE'
     },
     currency: {

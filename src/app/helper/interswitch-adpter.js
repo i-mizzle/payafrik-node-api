@@ -57,6 +57,7 @@ getSignature = function(options) {
       .substr(0, 10)
   );
   var nonce = appFunctions.generateUUID();
+  // options.encryptionMethod = "SHA-1"
   var encryptedMethod = options.encryptionMethod || "SHA-512";
   //   var extraData = options.extraData ? h.encodeExtraData(options.extraData) : "";
   var extraData = options.extraData ? appFunctions.encodeExtraData(options.extraData) : "";
