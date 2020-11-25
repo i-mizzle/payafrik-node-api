@@ -364,7 +364,7 @@ sendPaymentAdvice = async (req, res) => {
     //   await transactionHelper.createNewTransaction(username, userId, amount, adviceResponse, failureObject, pfkUserToken)
     //   return response.error(res, { message: "Token deduction failed, amount blocked" })
     // }
-    await transactionHelper.createNewTransaction('MART_PURCHASE_VIA_TOKEN', username, userId, amount, adviceResponse, {}, pfkUserToken)
+    await transactionHelper.createNewTransaction('MART_PURCHASE_VIA_TOKEN', username, userId, amount, adviceResponse, {}, pfkUserToken, res, 'INTERSWITCH')
     return response.ok(res, adviceResponse);
   } catch (error) {
     console.log(error.message);
