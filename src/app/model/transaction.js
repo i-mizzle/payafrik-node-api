@@ -36,7 +36,7 @@ const transactionSchema = new mongoose.Schema({
     },
     channel: {
         type: String,
-        enum : ['INTERSWITCH', 'PAYSTACK', 'COINBASE', 'FLUTTERWAVE'],
+        enum : ['INTERSWITCH', 'PAYSTACK', 'COINBASE', 'FLUTTERWAVE', 'SUPERPAY'],
         default: 'INTERSWITCH'
     },
     transactionFor: {

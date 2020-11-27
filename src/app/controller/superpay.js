@@ -10,6 +10,10 @@ module.exports = {
         const pfkUserToken = req.headers['pfk-user-token']
         const amount = req.body.amount / 100
 
+        if (amount < 1000) {
+            return response.badRequest(res, { message: "Sorry, you cannot purchase AEDC units less than NGN1000 Value" })
+        }
+
         if (!pfkUserToken || pfkUserToken === '') {
             return response.badRequest(res, { message: 'pfk-user-token is required in the request header' });
         }
@@ -107,7 +111,7 @@ module.exports = {
             //     await transactionHelper.createNewTransaction(username, userId, parsedPaymentResponse.message.TotalCustomerCharge, parsedPaymentResponse, failureObject, pfkUserToken, res)
             //     return response.error(res, { message: "Token deduction failed, amount blocked" })
             // }
-            await transactionHelper.createNewTransaction('MART_PURCHASE_VIA_TOKEN', username, userId, parsedPaymentResponse.message.TotalCustomerCharge,  parsedPaymentResponse, {}, pfkUserToken, res)
+            await transactionHelper.createNewTransaction('MART_PURCHASE_VIA_TOKEN', username, userId, parsedPaymentResponse.message.TotalCustomerCharge,  parsedPaymentResponse, {}, pfkUserToken, res, 'SUPERPAY')
             return response.ok(res, parsedPaymentResponse);
         } catch (error) {
             console.log(error.message);

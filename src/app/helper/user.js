@@ -1,5 +1,6 @@
 'use strict';
 const requestPromise = require("request-promise");
+const response = require('./../responses');
 const mongoose = require('mongoose');
 const User = mongoose.model('User');
 const NodeGeocoder = require('node-geocoder');
