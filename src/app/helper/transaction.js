@@ -22,7 +22,7 @@ module.exports = {
                     transactionStatus: transactionPayload.responseCodeGrouping,
                     amount: +transactionAmount,
                     transactionFor: transactionFor,
-                    pfkTransactionReference: transactionPayload.payafrikTransactionRef,
+                    pfkTransactionReference: transactionPayload.payafrikTransactionRef || transactionPayload.data.reference,
                     interswitchTransactionRef: transactionPayload.transactionRef,
                     channel: channel,
                     transactionData: transactionPayload.rechargePIN || transactionPayload.miscData,

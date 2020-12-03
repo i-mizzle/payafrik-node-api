@@ -197,6 +197,8 @@ transferFunds = async (req, res) => {
             messageBody: "Withdrawal of " + amount + " tokens from your payafrik account has been successfully initiated at the cost of " + charges + " tokens. You will receive an alert once deposit is made."
         })
 
+        // transferResponse.pfkTransactionReference = transferResponse.reference
+        console.log('------', transferResponse)
         await transactionHelper.createNewTransaction('TOKEN_WITHDRAWAL_TO_BANK_ACCOUNT', username, userId, Math.floor(amount + charges),  transferResponse, {}, pfkUserToken, res, 'FLUTTERWAVE')
 
         return response.ok(res, transferResponse.data);
