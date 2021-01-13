@@ -96,7 +96,7 @@ module.exports = {
                         charges: '0'
                     }
     
-                    mailer.sendEmail(mailParams)
+                    // mailer.sendEmail(mailParams)
                     return response.ok(res, { message: 'transaction has been updated' });
                 }
             } else {
