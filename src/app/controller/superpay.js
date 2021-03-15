@@ -6,6 +6,12 @@ const transactionHelper = require('../helper/transaction');
 const sms = require('../helper/sms');
 
 module.exports = {
+    /**
+     * TO BE DEPRECATED AFTER NEW INTEGRATIONS
+     * 
+     * @param {*} req 
+     * @param {*} res 
+     */
     validateAEDCCustomer: async (req, res) => {
         const pfkUserToken = req.headers['pfk-user-token']
         const amount = req.body.amount / 100

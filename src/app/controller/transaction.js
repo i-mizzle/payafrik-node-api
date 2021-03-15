@@ -49,13 +49,16 @@ module.exports = {
         try {
           queryResponse = await requestPromise(requestOptions);
         //   queryResponse = interswitchRequestAdapter.parseResponse(queryResponse);
-            console.log('SUCCESSFUL PUSH+++ ', queryResponse)
+            console.log('SUCCESSFUL PUSH+++ ', JSON.parse(queryResponse).data)
         //   return response.ok(res, queryResponse);
-          return true;
+          return {success: true, error: null, data: JSON.parse(queryResponse).data};
         } catch (error) {
-          console.log('FAILED PUSH+++ ', error.message);
+          console.log('FAILED PUSH+++ ', JSON.parse(error.error));
         //   return response.error(res, error);
-          return false;
+          return {
+              success: false, 
+              error: JSON.parse(error.error)
+            };
         }
     },
 
@@ -68,36 +71,44 @@ module.exports = {
             );
 
             if(transaction){
-                transaction.interswitchTransactionRef = req.body.interswitchTransactionRef || null
-                transaction.transactionStatus = req.body.transactionStatus || null
-                transaction.channelResponse = req.body.channelResponse || null
-
-                const transactionPushed = await module.exports.pushTransaction(req, {
-                    username: transaction.username,
-                    transactionType: transaction.transactionType,
-                    transactionStatus: transaction.transactionStatus,
-                    pfkTransactionReference: transaction.pfkTransactionReference,
-                    interswitchTransactionRef: transaction.interswitchTransactionRef,
-                    channel: transaction.channel,
-                    transactionFor: transaction.transactionFor,
-                    currency: transaction.currency,
-                    amount: transaction.amount,
-                    channelResponse: transaction.channelResponse
-                })
-
-                if (transactionPushed && req.body.status === 'SUCCESSFUL'){
-                    let mailParams = {
-                        receiverEmail: transaction.receiptEmail,
-                        paidAmount: transaction.amount,
-                        userName: req.user.name,
-                        invoiceNumber: transaction.pfkTransactionReference,
-                        paymentDate: new Date(),
-                        tokenCost: transaction.amount,
-                        charges: '0'
+                if (!transaction.pushStatus && (!transaction.webhookTransactionId || transaction.webhookTransactionId === '')){
+                    transaction.interswitchTransactionRef = req.body.interswitchTransactionRef || null
+                    transaction.transactionStatus = req.body.transactionStatus || null
+                    transaction.channelResponse = req.body.channelResponse || null
+                    const transactionPushed = await module.exports.pushTransaction(req, {
+                        username: transaction.username,
+                        transactionType: transaction.transactionType,
+                        transactionStatus: transaction.transactionStatus,
+                        pfkTransactionReference: transaction.pfkTransactionReference,
+                        interswitchTransactionRef: transaction.interswitchTransactionRef,
+                        channel: transaction.channel,
+                        transactionFor: transaction.transactionFor,
+                        currency: transaction.currency,
+                        amount: transaction.amount,
+                        channelResponse: transaction.channelResponse
+                    })
+                    if (transactionPushed.success && req.body.transactionStatus === 'SUCCESSFUL'){
+                        let mailParams = {
+                            receiverEmail: transaction.receiptEmail,
+                            paidAmount: transaction.amount,
+                            userName: req.user.name,
+                            invoiceNumber: transaction.pfkTransactionReference,
+                            paymentDate: new Date(),
+                            tokenCost: transaction.amount,
+                            charges: '0'
+                        }
+                        // mailer.sendEmail(mailParams)
+                        transaction.pushStatus = true
+                        transaction.webhookTransactionId = transactionPushed.data.webhook_trx_id
+                        const saved = await transaction.save()
+                        console.log('THE TRANSACTION TO SAVE-----', saved)
+                        return response.ok(res, { message: 'transaction has been updated' });
+                    } else {
+                        console.log('8347609850923423========', transactionPushed)
+                        return response.error(res, {message: transactionPushed.error.msg})
                     }
-    
-                    // mailer.sendEmail(mailParams)
-                    return response.ok(res, { message: 'transaction has been updated' });
+                } else {
+                    return response.conflict(res, {message: 'This transaction has already been settled'})
                 }
             } else {
                 return response.notFound(res, {message: 'transaction not found'});
@@ -107,20 +118,56 @@ module.exports = {
         }
     },
     fetch: async (req, res) => {
+        const resPerPage = req.params.itemsPerPage || 10; // results per page
+        const page = req.params.page || 1; // Page 
         try{
-            let transactions = await Transaction.find();
-            return response.ok(res, { transactions: transactions });
+            const transactions = await Transaction.find()
+            .skip((resPerPage * page) - resPerPage)
+            .limit(resPerPage);
+            const transactionsCount = await Transaction.count()
+            return response.ok(res, { 
+                count: transactionsCount,
+                currentPage: page,
+                pages: Math.ceil(transactionsCount/resPerPage),
+                perPage: resPerPage,
+                transactions: transactions.reverse()
+            });
         } catch(error) {
              response.error(res, error);
         }
     },
+
     fetchForUser: async (req, res) => {
-        // if (req.user.userType !== "SYSTEM_ADMIN" && req.user.userId !== req.params.userId) {
-        //     return response.conflict(res, { message: 'Sorry, you are not authorized to view these transactions'});
-        // }
+        const resPerPage = req.params.itemsPerPage || 10; // results per page
+        const page = req.params.page || 1; // Page 
         try{
-            let transactions = await Transaction.find({ username: req.user.username });
-            return response.ok(res, { transactions: transactions });
+            const transactions = await Transaction.find({ username: req.user.username })
+            .skip((resPerPage * page) - resPerPage)
+            .limit(resPerPage);
+            const transactionsCount = await Transaction.count({ username: req.user.username })
+            return response.ok(res, { 
+                count: transactionsCount,
+                currentPage: page,
+                pages: Math.ceil(transactionsCount/resPerPage),
+                perPage: resPerPage,
+                transactions: transactions.reverse()
+            });
+        } catch(error) {
+             response.error(res, error);
+        }
+    },
+
+    searchTransactions: async (req, res) => {
+        const query = req.params.searchQuery
+        try{
+            const filtered = await Transaction.find({
+                "$or": [
+                    { username: { '$regex': query, '$options': 'i' } },
+                    { channel: { '$regex': query, '$options': 'i' } },
+                    { pfkTransactionReference: { '$regex': query, '$options': 'i' } }
+                ]
+            })
+            return response.ok(res, { results: filtered.reverse() });
         } catch(error) {
              response.error(res, error);
         }

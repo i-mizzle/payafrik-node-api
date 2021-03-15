@@ -13,8 +13,12 @@ router.post('/login', user.login);
 router.post('/signup', user.signUp);
 router.put('/confirm/:confirmationCode', user.confirm);
 router.get('/user', isAuthenticated, user.me);
-
 router.put('/kyc/update', isAuthenticated, s3.uploadS3.single('file'), user.updateKyc)
+
+// INTEGRATED ROUTES
+router.post('/biller/validate-customer/:billerSource/:billCode', isPFKAuthenticated, interswitch.validateBillerCustomer)
+router.post('/biller/post-transaction/:billerSource', isPFKAuthenticated, interswitch.sendPaymentAdvice)
+router.get('/biller/:billerSource/:billerId', interswitch.getPaymentItemsForBiller)
 
 router.get('/interswitch/categories', interswitch.getBillerCategories)
 router.get('/interswitch/billers', interswitch.getBillers)
@@ -27,7 +31,7 @@ router.post('/interswitch/validate-customer', interswitch.validateCustomer)
 // INTERSWITCH FUNDS TRANSFER
 router.get('/interswitch/banks', interswitch.getBanks)
 router.post('/interswitch/banks/validate-customer', isPFKAuthenticated, interswitch.validateCustomerName)
-router.post('/interswitch/cards/fund-card', isPFKAuthenticated, interswitch.fundPrepaidCard)
+router.post('/interswitch/fund-customer', isPFKAuthenticated, interswitch.fundCustomer)
 
 // FLUTTERWAVE
 router.get('/flutterwave/banks/:country', isPFKAuthenticated, flutterwave.getBanks)
@@ -46,8 +50,11 @@ router.post('/superpay/aedc/verify-payment', isPFKAuthenticated, superpay.valida
 // TRANSACTIONS
 router.post('/interswitch/transactions/new', isPFKAuthenticated, transactions.create)
 router.get('/interswitch/transactions/user', isPFKAuthenticated, transactions.fetchForUser)
+// router.get('/interswitch/transactions/user/:username', isPFKAuthenticated, transactions.fetchForUser)
+router.get('/interswitch/transactions/search/:searchQuery', isPFKAuthenticated, transactions.searchTransactions)
 router.get('/interswitch/transactions/all', isPFKAuthenticated, transactions.fetch)
 router.put('/interswitch/transactions/update/:payafrikTransactionRef', isPFKAuthenticated, transactions.updateTransaction)
+// router.get('/transactions/query/:ref', interswitch.queryTransaction)
 router.get('/interswitch/query-transaction/:payafrikTransactionRef', interswitch.queryTransaction)
 
 module.exports = router

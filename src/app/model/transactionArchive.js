@@ -4,7 +4,10 @@ const mongoose = require('mongoose');
 var Schema = mongoose.Schema;
 var ObjectId = Schema.Types.ObjectId;
 // const bcrypt = require('bcrypt');
-const transactionSchema = new mongoose.Schema({
+const transactionArchiveSchema = new mongoose.Schema({
+    transactionId: {
+        type: String
+    },
     userId:{
         type: String
     },
@@ -54,14 +57,11 @@ const transactionSchema = new mongoose.Schema({
         type: Boolean,
         default: false
     },
-    webhookTransactionId: {
-        type: String
-    },
     channelResponse: {}      
 }, {
     timestamps: true
 });
-transactionSchema.set('toJSON', {
+transactionArchiveSchema.set('toJSON', {
     getters: true,
     virtuals: false,
     transform: (doc, ret, options) => {
@@ -75,4 +75,4 @@ transactionSchema.set('toJSON', {
 // userSchema.methods.isValidPassword = function isValidPassword(password) {
 //     return bcrypt.compareSync(password, this.password);
 // };
-module.exports = mongoose.model('Transaction', transactionSchema);
+module.exports = mongoose.model('TransactionArchive', transactionArchiveSchema);

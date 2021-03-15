@@ -118,5 +118,9 @@ module.exports = {
         } catch (error) {
             return response.error(res, 'transaction creation failed');
         }
-    }
+    },
+
+    deleteTransaction: (condition) => {
+        return Transaction.remove(condition);
+    },
 }

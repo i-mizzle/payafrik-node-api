@@ -4,7 +4,8 @@ const axios = require('axios');
 const cryptoRandomString = require('crypto-random-string');
 const config = require("config");
 const sha512 = require("js-sha512")
-
+const iRecharge = require("../helper/iRecharge");
+const superpay = require("../helper/superpay");
 module.exports = {
     encodeBase64: (clientId, InterswitchSecret) => {
      return Buffer.from(clientId+':'+InterswitchSecret).toString('base64')
@@ -35,50 +36,61 @@ module.exports = {
         return signature
     },
 
-    getAEDCObject: () => {
-        return {
-            "categoryid": "1",
-            "categoryname": "Utilities",
-            "categorydescription": "Pay Utility Bills here",
-            "billerid": "AED",
-            "billername": "Abuja Electricity Distribution Company Prepaid",
-            "customerfield1": "Customer Metre Number",
-            "customerfield2": "",
-            "supportemail": "support@interswitchgroup.com",
-            "paydirectProductId": "5161",
-            "paydirectInstitutionId": "0",
-            "narration": "AEDC Prepaid Payments",
-            "shortName": "AEDC",
-            "surcharge": "",
-            "currencyCode": "566",
-            "currencySymbol": "NGN",
-            "customMessageUrl": "",
-            "customSectionUrl": "",
-            "logoUrl": "q.gif",
-            "networkId": "",
-            "productCode": "",
-            "type": "",
-            "url": ""
+    removeBillersWithAlternatives: (billers) => {
+        const newBillersArray = []
+
+        billers.forEach(element => {
+            if(!config.billersWithDuplicates.includes(element.shortName)) {
+                newBillersArray.push(element)
+            }
+        });
+
+        return newBillersArray
+    },
+
+    getExternalBillerItems: (biller, source) => {
+        const activeExternalBillers = config.activeExternalBillers
+        if (activeExternalBillers.includes(biller)) {
+            let billerPaymentItems = null 
+            let allItems = null
+            switch(source) {
+                case 'superpay':
+                    allItems = superpay.getPaymentItems(biller)
+                    billerPaymentItems = allItems[biller]
+                    break;
+                case 'vatebra':
+                    allItems = vatebra.getPaymentItems(biller)
+                    billerPaymentItems = allItems[biller]
+                    break;
+                case 'irecharge':
+                    allItems = iRecharge.getPaymentItems(biller)
+                    break;
+                default:
+                // code block
+            }
+            billerPaymentItems = allItems[biller]
+            return billerPaymentItems
         }
     },
 
-    getAEDCPaymentItemObject: () => {
-        return {
-            "categoryid": "1",
-            "billerid": "AED",
-            "isAmountFixed": false,
-            "paymentitemid": "01",
-            "paymentitemname": "AEDC Prepaid",
-            "amount": "0",
-            "code": "01",
-            "currencyCode": "566",
-            "currencySymbol": "NGN",
-            "itemCurrencySymbol": "",
-            "sortOrder": "0",
-            "pictureId": "0",
-            "paymentCode": "",
-            "itemFee": "",
-            "paydirectItemCode": ""
+    vendExternal: (biller, source) => {
+        const activeExternalBillers = config.activeExternalBillers
+        if (activeExternalBillers.includes(biller)) {
+            let vendResponse = null 
+            switch(source) {
+                case 'superpay':
+                    vendResponse = superpay.vendTokens(biller)
+                    break;
+                case 'vatebra':
+                    vendResponse = vatebra.vendTokens(biller)
+                    break;
+                case 'irecharge':
+                    vendResponse = iRecharge.vendTokens(biller)
+                    break;
+                default:
+                // code block
+            }
+            return vendResponse
         }
     }
    

@@ -5,7 +5,7 @@ const config = require("config");
 
 optionsCheck = options => {
   if (!options) {
-    throw "No option  parameter specified";
+    throw "No option parameter specified";
     return false;
   }
   if (!options.accessToken) {
